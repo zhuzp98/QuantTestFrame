@@ -1,0 +1,31 @@
+//@version=4
+// For use on Bitcoin BNC:BLX Weekly or Monthly
+// Stock to Flow Model by PlanB https://medium.com/@100trillionUSD/modeling-bitcoins-value-with-scarcity-91fa0fc03e25
+// Code by mexxer and yomofoV https://www.tradingview.com/script/kZkRkvL9-Bitcoin-Stock-To-Flow-Model-Value-fixed/
+study("Bitcoin Stock to Flow", shorttitle="Stock to Flow", overlay=true)
+// stock to flow = TOTBC/flow yearly
+// flow(n) = TOTBC(n) - TOTBC(n-1)
+// n = month;		flow yearly = flow(n) * (12/ n)
+
+d = 12 // default is monthly
+if(timeframe.isweekly)
+    d := 52
+    
+if(timeframe.isdaily)
+    d := 365
+
+stock = security("QUANDL:BCHAIN/TOTBC", timeframe.period, close)
+btcprice = security("QUANDL:BCHAIN/MKPRU", timeframe.period, close)
+
+// assumes monthly flow, everything is offset by one previous month using candle data from 1 candle back
+flow = stock[1] - stock[2]
+
+// converts flow to yearly flow
+yearlyflow = flow * d
+
+// total btc / yearly flow
+stocktoflow = (stock[1]-1000000) / yearlyflow
+
+// pow(base, exponent) → float
+modelvalue = 0.4 * pow(stocktoflow,3)
+stfRatio = btcprice[1] / modelvalue
