@@ -2,7 +2,7 @@
 // © rhapsodyz
 
 //@version=5
-strategy("MACD-SMI Long Strategy", overlay = true, pyramiding = 0, initial_capital = 100000, commission_type = strategy.commission.percent, commission_value = 0.04, slippage = 2)
+strategy("SMI-MA Long Strategy", overlay = true, pyramiding = 0, initial_capital = 100000, commission_type = strategy.commission.percent, commission_value = 0.04, slippage = 2)
 
 // General Numbers
 _qty = (strategy.equity * 0.9) / close
@@ -22,7 +22,7 @@ bearTrend   = diff <  0
 
 // MACD Histogram
 [macdLine, signalLine, histLine] = ta.macd(close, fastLength, slowLength, signalLength)
-diffHist = histLine - HistLine[1]
+diffHist = histLine - histLine[1]
 
 // Conditions
 // MACD
