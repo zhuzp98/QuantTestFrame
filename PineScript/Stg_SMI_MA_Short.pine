@@ -94,12 +94,12 @@ if macdShort
     strategy.close("Long", qty_percent=100)
 
 // === Execute short entry ===
-if macdShort
+if macdClose
     stopLossPrice   := close * (1 + stopLoss/100)
     takeProfitPrice := close * (1 - takeProfit/100)
     strategy.entry("Short", strategy.short, qty = _qty)
     strategy.exit("Exit", "Short", stop = stopLossPrice, limit = takeProfitPrice)
 
 // === Execute short exit ===
-if macdLong
+if macdLong or macdOpen
     strategy.close("Short", qty_percent = 100)

@@ -68,30 +68,6 @@ stochShort = crossunder(k,d) and (k > overbought)
 stochLongEx  = (crossover (d, overbought)) or (crossunder(maFast, maSlow))
 stochShortEx = (crossunder(d, oversold))   or (crossover (maFast, maSlow))
 
-
-// === PLOTTING EMAs ===
-fast = plot(maFast, title = "Fast MA", color = yellow, linewidth = 1, style = line, transp = 10)
-slow = plot(maSlow, title = "Slow MA", color = white,  linewidth = 1, style = line, transp = 10)
-
-
-// === Vertical Coloring for Crosses in Overbought/Oversold zone and for MA Trend Zones ===
-b_color = stochLong ? green : stochShort ? red : na
-bgcolor(HighlightOBOS ? b_color : na, title="Overbought / Oversold", transp=65)   //Highlight the Overbought/Oversold Stoch Crossings
-t_color = diff>=0 ? green : diff<0 ? red : na
-bgcolor(HighlightTrend ? t_color : na, title="Trend up / Trend down", transp=90)  //Highlight the EMA Trend
-
-// Show EMA Trend as symbols at the bottom
-bullTrend = diff>=0
-bearTrend = diff<0
-plotchar(bullTrend, title = "BullTrend", char="_", location = location.bottom, color=#0CAB07, transp = 0, size=size.tiny)
-plotchar(bearTrend, title = "BearTrend", char="_", location = location.bottom, color=#DE071C, transp = 0, size=size.tiny)
-
-// Show EMA Convergence/Divergence Trend as symbols at the top
-//bullTrendCD = (diff>=0 and diff>=diff[1]) or (diff<0  and diff>diff[1])
-//bearTrendCD = (diff<0  and diff<=diff[1]) or (diff>=0 and diff<diff[1])
-//plotchar(bullTrendCD, title = "BullTrend CD", char="o", location = location.top, color=#0CAB07, transp = 0, size=size.tiny)
-//plotchar(bearTrendCD, title = "BearTrend CD", char="x", location = location.top, color=#DE071C, transp = 0, size=size.tiny)
-
 // === STRATEGY LOGIC ===
 // Time Restriction
 timeInRange = (time > timestamp(fromYear, fromMonth, fromDay, 00, 00)) and (time < timestamp(toYear, toMonth, toDay, 23, 59))
