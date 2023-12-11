@@ -69,7 +69,7 @@ macdLong      = ta.crossover(histLine, 0) and close > ema20
 macdShort     = ta.crossunder(histLine, 0) and close < ema20
 
 // === Stochastic ===
-smiLongOpen   = (ta.crossover(smi, smiEMA)     and  smi < overbought)
+smiLongOpen   = (ta.crossover(smiDiv, smiEMA)     and  smi < overbought)
 smiLongExit   = (ta.crossunder(smi, smiEMA)   and  smi > 10)           or   ta.crossunder(maFast, maSlow)    //or (ta.crossover(smiEMA, overbought))
 smiShortOpen  = (ta.crossunder(smi, smiEMA)    and  smi > overbought)
 smiShortExit  = (ta.crossover(smi, smiEMA) and  smi < oversold)        or   ta.crossover(maFast, maSlow)      or   smiDiff[1] < smiDiff //or (ta.crossunder(smiEMA, oversold))

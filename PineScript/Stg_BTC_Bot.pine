@@ -1,0 +1,123 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © rhapsodyz
+
+//@version=5
+
+strategy(title = "BTC bot", 
+     overlay = true, 
+     pyramiding = 1, 
+     initial_capital = 100000, 
+     default_qty_type= strategy.percent_of_equity, 
+     default_qty_value = 100, 
+     commission_type = strategy.commission.percent, 
+     commission_value = 0.04, 
+     slippage = 2)
+
+strat_dir_input = 
+     input.string(title="Strategy Direction", 
+         defval="long", 
+         options=["long", "short", "all"])
+
+strat_dir_value = 
+     strat_dir_input == "long" ? strategy.direction.long : 
+     strat_dir_input == "short" ? strategy.direction.short : 
+     strategy.direction.all
+
+strategy.risk.allow_entry_in(strat_dir_value)
+
+// #######################
+// === General Numbers ===
+// #######################
+
+// === Equity Usage ===
+equityUsage = input(0.9, title="Equity Usage Percentage")
+_qty = (strategy.equity * equityUsage) / close
+
+C_DownTrend = true
+C_UpTrend = true
+smaFastLength = input.int(50, title = "SMA Fast Length")
+smaSlowLength = input.int(200, title = "SMA Slow Length")
+
+var trendRule1 = "SMA Single"
+var trendRule2 = "SMA Double"
+var trendRule = input.string(trendRule1, "Detect Trend Based On", options=[trendRule1, trendRule2, "No detection"])
+
+if trendRule == trendRule1
+	priceAvg = ta.sma(close, smaFastLength)
+	C_DownTrend := close < priceAvg
+	C_UpTrend := close > priceAvg
+
+if trendRule == trendRule2
+	smaSlow = ta.sma(close, smaSlowLength)
+	smaFast = ta.sma(close, smaFastLength)
+	C_DownTrend := close < smaFast and smaFast < smaSlow
+	C_UpTrend := close > smaFast and smaFast > smaSlow
+
+// === Input A ===
+higherTF    = input.timeframe("W")
+prevClose   = request.security(syminfo.tickerid, higherTF, close[1])
+prevHigh    = request.security(syminfo.tickerid, higherTF, high[1])
+prevLow     = request.security(syminfo.tickerid, higherTF, low[1])
+
+factor = input(2, "Factor of Large Border")
+
+PP = 0.0
+R1 = 0.0
+R2 = 0.0 
+R3 = 0.0
+S1 = 0.0 
+S2 = 0.0 
+S3 = 0.0
+
+PP := hlc3
+R1 := PP + (PP - prevLow)
+S1 := PP - (prevHigh - PP)
+R2 := PP + (prevHigh - prevLow)
+S2 := PP - (prevHigh - prevLow)
+
+R3 := prevHigh + factor * (PP  - prevLow) 
+S3 := prevLow  - factor * (prevHigh - PP) 
+
+// 
+length = input(21)
+//
+
+closeRSI = ta.rsi(close, length)
+emaCRSI  = ta.ema(closeRSI,length)
+diffRSI  = (closeRSI - emaCRSI) * 5
+sigRSI   = (closeRSI + emaCRSI + diffRSI) / 2
+//
+longSignal = ta.crossover(sigRSI, 0)
+
+shortSignal = ta.crossover(close[1], R3)
+//
+
+
+smiPlot = plot(R3, "R3", color = color.blue)
+plot(close[1], "Previous Close", color = color.orange)
+plot(sigRSI, title = "sigRSI", style = plot.style_columns, color = (sigRSI >= 0 ? (sigRSI[1] < sigRSI ? #26A69A : #B2DFDB) : (sigRSI[1] < sigRSI ? #FFCDD2 : #FF5252)))
+
+
+if longSignal and C_UpTrend
+    strategy.entry("buy", strategy.long, qty = _qty)
+if shortSignal and C_DownTrend
+    strategy.entry("sell", strategy.short, qty = _qty)
+
+per(pcnt) =>
+    strategy.position_size != 0 ? math.round(pcnt / 100 * strategy.position_avg_price / syminfo.mintick) : float(na)
+
+// stoploss maybe 8
+stoploss=input.float(title=" stop loss", defval = 15, minval = 0.01)
+los = per(stoploss)
+q1=input.int(title=" qty_percent1", defval=25, minval=1)
+q2=input.int(title=" qty_percent2", defval=25, minval=1)
+q3=input.int(title=" qty_percent3", defval=25, minval=1)
+// takeprofit maybe 2 3 4 5
+tp1=input.float(title=" Take profit1", defval=3, minval=0.01)
+tp2=input.float(title=" Take profit2", defval=5, minval=0.01)
+tp3=input.float(title=" Take profit3", defval=7, minval=0.01)
+tp4=input.float(title=" Take profit4", defval=10, minval=0.01)
+strategy.exit("x1", qty_percent = q1, profit = per(tp1), loss = los)
+strategy.exit("x2", qty_percent = q2, profit = per(tp2), loss = los)
+strategy.exit("x3", qty_percent = q3, profit = per(tp3), loss = los)
+strategy.exit("x4", profit = per(tp4), loss = los)

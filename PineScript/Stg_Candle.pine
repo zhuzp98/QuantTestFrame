@@ -1,5 +1,16 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © rhapsodyz
+
 //@version=5
-indicator("*A Candlestick Patterns", shorttitle = "Candle Patterns", overlay=true)
+strategy("Candle Strategy", overlay = true, pyramiding = 0, initial_capital = 100000, commission_type = strategy.commission.percent, commission_value = 0.04, slippage = 2)
+
+// #######################
+// === General Numbers ===
+// #######################
+
+// === Equity Usage ===
+equityUsage = input(0.9, title="Equity Usage Percentage")
+_qty = (strategy.equity * equityUsage) / close
 
 C_DownTrend = true
 C_UpTrend = true
@@ -152,7 +163,6 @@ C_OnNeckBearishNumberOfCandles = 2
 C_OnNeckBearish = false
 if C_DownTrend and C_BlackBody[1] and C_LongBody[1] and C_WhiteBody and open < close[1] and C_SmallBody and C_Range!=0 and math.abs(close-low[1])<=C_BodyAvg*0.05
 	C_OnNeckBearish := true
-alertcondition(C_OnNeckBearish, title = "On Neck – Bearish", message = "New On Neck – Bearish pattern detected")
 if C_OnNeckBearish  and  OnNeckInput and (("Bearish" == CandleType) or CandleType == "Both")
 
     var ttBearishOnNeck = "待入线 On Neck\nOn Neck is a two-line continuation pattern found in a downtrend. The first candle is long and red, the second candle is short and has a green body. The closing price of the second candle is close or equal to the first candle's low price. The pattern hints at a continuation of a downtrend, and penetrating the low of the green candlestick is sometimes considered a confirmation. "
@@ -161,7 +171,6 @@ C_RisingWindowBullishNumberOfCandles = 2
 C_RisingWindowBullish = false
 if C_UpTrend[1] and (C_Range!=0 and C_Range[1]!=0) and low > high[1]
 	C_RisingWindowBullish := true
-alertcondition(C_RisingWindowBullish, title = "Rising Window – Bullish", message = "New Rising Window – Bullish pattern detected")
 if C_RisingWindowBullish  and  RisingWindowInput and (("Bullish" == CandleType) or CandleType == "Both")
 
     var ttBullishRisingWindow = "上涨窗口 Rising Window\nRising Window is a two-candle bullish continuation pattern that forms during an uptrend. Both candles in the pattern can be of any type with the exception of the Four-Price Doji. The most important characteristic of the pattern is a price gap between the first candle's high and the second candle's low. That gap (window) between two bars signifies support against the selling pressure."
@@ -170,7 +179,6 @@ C_FallingWindowBearishNumberOfCandles = 2
 C_FallingWindowBearish = false
 if C_DownTrend[1] and (C_Range!=0 and C_Range[1]!=0) and high < low[1]
 	C_FallingWindowBearish := true
-alertcondition(C_FallingWindowBearish, title = "Falling Window – Bearish", message = "New Falling Window – Bearish pattern detected")
 if C_FallingWindowBearish  and  FallingWindowInput and (("Bearish" == CandleType) or CandleType == "Both")
 
     var ttBearishFallingWindow = "下跌窗口 Falling Window\nFalling Window is a two-candle bearish continuation pattern that forms during a downtrend. Both candles in the pattern can be of any type, with the exception of the Four-Price Doji. The most important characteristic of the pattern is a price gap between the first candle's low and the second candle's high. The existence of this gap (window) means that the bearish trend is expected to continue."
@@ -179,7 +187,6 @@ C_FallingThreeMethodsBearishNumberOfCandles = 5
 C_FallingThreeMethodsBearish = false
 if C_DownTrend[4] and (C_LongBody[4] and C_BlackBody[4]) and (C_SmallBody[3] and C_WhiteBody[3] and open[3]>low[4] and close[3]<high[4]) and (C_SmallBody[2] and C_WhiteBody[2] and open[2]>low[4] and close[2]<high[4]) and (C_SmallBody[1] and C_WhiteBody[1] and open[1]>low[4] and close[1]<high[4]) and (C_LongBody and C_BlackBody and close<close[4])
 	C_FallingThreeMethodsBearish := true
-alertcondition(C_FallingThreeMethodsBearish, title = "Falling Three Methods – Bearish", message = "New Falling Three Methods – Bearish pattern detected")
 if C_FallingThreeMethodsBearish  and  FallingThreeMethodsInput and (("Bearish" == CandleType) or CandleType == "Both")
 
     var ttBearishFallingThreeMethods = "下跌三法 Falling Three Methods\n见于下跌趋势，连续出现三根较短阳线之后，行情将继续下跌。理想情况下，这三根阳线的长度不超过前一根阴线的烛身。上涨整理形态的标志是一根实体较长的阴线，预示市场将再度看跌。"
@@ -188,7 +195,6 @@ C_RisingThreeMethodsBullishNumberOfCandles = 5
 C_RisingThreeMethodsBullish = false
 if C_UpTrend[4] and (C_LongBody[4] and C_WhiteBody[4]) and (C_SmallBody[3] and C_BlackBody[3] and open[3]<high[4] and close[3]>low[4]) and (C_SmallBody[2] and C_BlackBody[2] and open[2]<high[4] and close[2]>low[4]) and (C_SmallBody[1] and C_BlackBody[1] and open[1]<high[4] and close[1]>low[4]) and (C_LongBody and C_WhiteBody and close>close[4])
 	C_RisingThreeMethodsBullish := true
-alertcondition(C_RisingThreeMethodsBullish, title = "Rising Three Methods – Bullish", message = "New Rising Three Methods – Bullish pattern detected")
 if C_RisingThreeMethodsBullish  and  RisingThreeMethodsInput and (("Bullish" == CandleType) or CandleType == "Both")
 
     var ttBullishRisingThreeMethods = "上涨三法 Rising Three Methods\n见于上涨趋势，连续出现三根较短阴线之后，行情将继续上涨。理想情况下，这三根阴线的长度不超过前一根阳线的烛身。上涨整理形态的标志是一根实体较长的阳线，预示市场将再度看涨。"
@@ -197,7 +203,6 @@ C_TweezerTopBearishNumberOfCandles = 2
 C_TweezerTopBearish = false
 if C_UpTrend[1] and (not C_IsDojiBody or (C_HasUpShadow and C_HasDnShadow)) and math.abs(high-high[1]) <= C_BodyAvg*0.05 and C_WhiteBody[1] and C_BlackBody and C_LongBody[1]
 	C_TweezerTopBearish := true
-alertcondition(C_TweezerTopBearish, title = "Tweezer Top – Bearish", message = "New Tweezer Top – Bearish pattern detected")
 if C_TweezerTopBearish  and  TweezerTopInput and (("Bearish" == CandleType) or CandleType == "Both")
 
     var ttBearishTweezerTop = "镊子顶 Tweezer Top\nTweezer Top is a two-candle pattern that signifies a potential bearish reversal. The pattern is found during an uptrend. The first candle is long and green, the second candle is red, and its high is nearly identical to the high of the previous candle. The virtually identical highs, together with the inverted directions, hint that bears might be taking over the market."
@@ -206,7 +211,6 @@ C_TweezerBottomBullishNumberOfCandles = 2
 C_TweezerBottomBullish = false
 if C_DownTrend[1] and (not C_IsDojiBody or (C_HasUpShadow and C_HasDnShadow)) and math.abs(low-low[1]) <= C_BodyAvg*0.05 and C_BlackBody[1] and C_WhiteBody and C_LongBody[1]
 	C_TweezerBottomBullish := true
-alertcondition(C_TweezerBottomBullish, title = "Tweezer Bottom – Bullish", message = "New Tweezer Bottom – Bullish pattern detected")
 if C_TweezerBottomBullish  and  TweezerBottomInput and (("Bullish" == CandleType) or CandleType == "Both")
 
     var ttBullishTweezerBottom = "镊子底 Tweezer Bottom\nTweezer Bottom is a two-candle pattern that signifies a potential bullish reversal. The pattern is found during a downtrend. The first candle is long and red, the second candle is green, its lows nearly identical to the low of the previous candle. The virtually identical lows together with the inverted directions hint that bulls might be taking over the market."
@@ -215,7 +219,6 @@ C_DarkCloudCoverBearishNumberOfCandles = 2
 C_DarkCloudCoverBearish = false
 if (C_UpTrend[1] and C_WhiteBody[1] and C_LongBody[1]) and (C_BlackBody and close < C_BodyMiddle[1] and close > open[1])
 	C_DarkCloudCoverBearish := true
-alertcondition(C_DarkCloudCoverBearish, title = "Dark Cloud Cover – Bearish", message = "New Dark Cloud Cover – Bearish pattern detected")
 if C_DarkCloudCoverBearish  and  DarkCloudCoverInput and (("Bearish" == CandleType) or CandleType == "Both")
 
     var ttBearishDarkCloudCover = "乌云盖顶 Dark Cloud Cover\n 第一根阳线强劲实体，第二根阴线收盘于阳线中点以下。上涨动能正在被空头消耗。确认后形成阻力位。"
@@ -224,7 +227,6 @@ C_DownsideTasukiGapBearishNumberOfCandles = 3
 C_DownsideTasukiGapBearish = false
 if C_LongBody[2] and C_SmallBody[1] and C_DownTrend and C_BlackBody[2] and C_BodyHi[1] <= (C_BodyLo[2] + pert * C_BodyAvg) and C_BlackBody[1] and C_WhiteBody and C_BodyHi <= (C_BodyLo[2] + pert * C_BodyAvg) and C_BodyHi >= (C_BodyHi[1] - pert * C_BodyAvg)
 	C_DownsideTasukiGapBearish := true
-alertcondition(C_DownsideTasukiGapBearish, title = "Downside Tasuki Gap – Bearish", message = "New Downside Tasuki Gap – Bearish pattern detected")
 if C_DownsideTasukiGapBearish  and  DownsideTasukiGapInput and (("Bearish" == CandleType) or CandleType == "Both")
 
     var ttBearishDownsideTasukiGap = "向下跳空并列 Downside Tasuki Gap\nDownside Tasuki Gap is a three-candle pattern found in a downtrend that usually hints at the continuation of the downtrend. The first candle is long and red, followed by a smaller red candle with its opening price that gaps below the body of the previous candle. The third candle is green and it closes inside the gap created by the first two candles, unable to close it fully. The bull’s inability to close that gap hints that the downtrend might continue."
@@ -233,7 +235,6 @@ C_UpsideTasukiGapBullishNumberOfCandles = 3
 C_UpsideTasukiGapBullish = false
 if C_LongBody[2] and C_SmallBody[1] and C_UpTrend and C_WhiteBody[2] and C_BodyLo[1] >= (C_BodyHi[2] - pert * C_BodyAvg) and C_WhiteBody[1] and C_BlackBody and C_BodyLo >= C_BodyHi[2] and C_BodyLo <= (C_BodyLo[1] + pert * C_BodyAvg)
 	C_UpsideTasukiGapBullish := true
-alertcondition(C_UpsideTasukiGapBullish, title = "Upside Tasuki Gap – Bullish", message = "New Upside Tasuki Gap – Bullish pattern detected")
 if C_UpsideTasukiGapBullish  and  UpsideTasukiGapInput and (("Bullish" == CandleType) or CandleType == "Both")
 
     var ttBullishUpsideTasukiGap = "向上跳空并列 Upside Tasuki Gap\nUpside Tasuki Gap is a three-candle pattern found in an uptrend that usually hints at the continuation of the uptrend. The first candle is long and green, followed by a smaller green candle with its opening price that gaps above the body of the previous candle. The third candle is red and it closes inside the gap created by the first two candles, unable to close it fully. The bear’s inability to close the gap hints that the uptrend might continue."
@@ -242,7 +243,6 @@ C_EveningDojiStarBearishNumberOfCandles = 3
 C_EveningDojiStarBearish = false
 if C_LongBody[2] and C_IsDojiBody[1] and C_LongBody and C_UpTrend and C_WhiteBody[2] and C_BodyLo[1] >= (C_BodyHi[2] - pert * C_BodyAvg) and C_BlackBody and C_BodyLo <= C_BodyMiddle[2] and C_BodyLo > C_BodyLo[2] and C_BodyLo[1] >= (C_BodyHi - pert * C_BodyAvg)
 	C_EveningDojiStarBearish := true
-alertcondition(C_EveningDojiStarBearish, title = "Evening Doji Star – Bearish", message = "New Evening Doji Star – Bearish pattern detected")
 if C_EveningDojiStarBearish  and  EveningDojiStarInput and (("Bearish" == CandleType) or CandleType == "Both")
 
     var ttBearishEveningDojiStar = "十字黄昏星 Evening Doji Star\n长-十字-长三根，第一和第三根位于中央十字星之下。看跌信号。确认后形成阻力位。"
@@ -251,7 +251,6 @@ C_DojiStarBearishNumberOfCandles = 2
 C_DojiStarBearish = false
 if C_UpTrend and C_WhiteBody[1] and C_LongBody[1] and C_IsDojiBody and C_BodyLo >= (C_BodyHi[1] - pert * C_BodyAvg)
 	C_DojiStarBearish := true
-alertcondition(C_DojiStarBearish, title = "Doji Star – Bearish", message = "New Doji Star – Bearish pattern detected")
 if C_DojiStarBearish  and  DojiStarInput and (("Bearish" == CandleType) or CandleType == "Both")
 
     var ttBearishDojiStar = "看跌十字星 Doji Star\n开盘价与收盘价几乎相等，且接近价格区间中点。市场分歧，犹豫不决。"
@@ -260,7 +259,6 @@ C_DojiStarBullishNumberOfCandles = 2
 C_DojiStarBullish = false
 if C_DownTrend and C_BlackBody[1] and C_LongBody[1] and C_IsDojiBody and C_BodyHi <= (C_BodyLo[1] + pert * C_BodyAvg)
 	C_DojiStarBullish := true
-alertcondition(C_DojiStarBullish, title = "Doji Star – Bullish", message = "New Doji Star – Bullish pattern detected")
 if C_DojiStarBullish  and  DojiStarInput and (("Bullish" == CandleType) or CandleType == "Both")
 
     var ttBullishDojiStar = "看涨十字星 Doji Star\n开盘价与收盘价几乎相等，且接近价格区间中点。市场分歧，犹豫不决。"
@@ -269,7 +267,6 @@ C_MorningDojiStarBullishNumberOfCandles = 3
 C_MorningDojiStarBullish = false
 if C_LongBody[2] and C_IsDojiBody[1] and C_LongBody and C_DownTrend and C_BlackBody[2] and C_BodyHi[1] <= (C_BodyLo[2] + pert * C_BodyAvg) and C_WhiteBody and C_BodyHi >= C_BodyMiddle[2] and C_BodyHi <= C_BodyHi[2] and C_BodyHi[1] <= (C_BodyLo + pert * C_BodyAvg)
 	C_MorningDojiStarBullish := true
-alertcondition(C_MorningDojiStarBullish, title = "Morning Doji Star – Bullish", message = "New Morning Doji Star – Bullish pattern detected")
 if C_MorningDojiStarBullish  and  MorningDojiStarInput and (("Bullish" == CandleType) or CandleType == "Both")
 
     var ttBullishMorningDojiStar = "十字启明星 Morning Doji Star\n长-十字-长三根，第一和第三根位于中央十字星之上。位于下跌趋势表示看涨信号。确认后形成支撑位。"
@@ -278,7 +275,6 @@ C_PiercingBullishNumberOfCandles = 2
 C_PiercingBullish = false
 if (C_DownTrend[1] and C_BlackBody[1] and C_LongBody[1]) and (C_WhiteBody and open <= (low[1] + pert * C_BodyAvg) and close > C_BodyMiddle[1] and close < open[1])
 	C_PiercingBullish := true
-alertcondition(C_PiercingBullish, title = "Piercing – Bullish", message = "New Piercing – Bullish pattern detected")
 if C_PiercingBullish  and  PiercingInput and (("Bullish" == CandleType) or CandleType == "Both")
 
     var ttBullishPiercing = "刺穿 Piercing\n第一根阴线强劲实体，第二根阳线收盘于阴线中点以上。下跌动能遭遇多头奋力一搏。确认后形成支撑位。"
@@ -288,7 +284,6 @@ C_HammerBullish = false
 if C_SmallBody and C_Body > 0 and C_BodyLo > hl2 and C_DnShadow >= C_Factor * C_Body and not C_HasUpShadow
     if C_DownTrend
         C_HammerBullish := true
-alertcondition(C_HammerBullish, title = "Hammer – Bullish", message = "New Hammer – Bullish pattern detected")
 if C_HammerBullish  and  HammerInput and (("Bullish" == CandleType) or CandleType == "Both")
 
     var ttBullishHammer = "锤子线 Hammer\n下影线很长，收盘价位于或接近高点。在大幅下跌或严重超卖区，注意可能反转。确认后形成支撑位。"
@@ -298,7 +293,6 @@ C_HangingManBearish = false
 if C_SmallBody and C_Body > 0 and C_BodyLo > hl2 and C_DnShadow >= C_Factor * C_Body and not C_HasUpShadow
 	if C_UpTrend
 	    C_HangingManBearish := true
-alertcondition(C_HangingManBearish, title = "Hanging Man – Bearish", message = "New Hanging Man – Bearish pattern detected")
 if C_HangingManBearish  and  HangingManInput and (("Bearish" == CandleType) or CandleType == "Both")
 
     var ttBearishHangingMan = "上吊线 Hanging Man\n下影线很长，收盘价位于或接近高点。在上涨或严重超买区，注意可能反转。确认后形成阻力位。"
@@ -308,7 +302,6 @@ C_ShootingStarBearish = false
 if C_SmallBody and C_Body > 0 and C_BodyHi < hl2 and C_UpShadow >= C_Factor * C_Body and not C_HasDnShadow
 	if C_UpTrend
 	    C_ShootingStarBearish := true
-alertcondition(C_ShootingStarBearish, title = "Shooting Star – Bearish", message = "New Shooting Star – Bearish pattern detected")
 if C_ShootingStarBearish  and  ShootingStarInput and (("Bearish" == CandleType) or CandleType == "Both")
 
     var ttBearishShootingStar = "流星线 Shooting Star\n上影线很长，实体很小接近低点。在明确的上升走势之后，看空信号。确认后形成阻力位。"
@@ -318,7 +311,6 @@ C_InvertedHammerBullish = false
 if C_SmallBody and C_Body > 0 and C_BodyHi < hl2 and C_UpShadow >= C_Factor * C_Body and not C_HasDnShadow
     if C_DownTrend
         C_InvertedHammerBullish := true
-alertcondition(C_InvertedHammerBullish, title = "Inverted Hammer – Bullish", message = "New Inverted Hammer – Bullish pattern detected")
 if C_InvertedHammerBullish  and  InvertedHammerInput and (("Bullish" == CandleType) or CandleType == "Both")
 
     var ttBullishInvertedHammer = "倒锤线 Inverted Hammer\n上影线特别长，实体特别小，与锤子线相反。处于下降趋势中为反转信号。确认后形成支撑位。"
@@ -328,7 +320,6 @@ C_MorningStarBullish = false
 if C_LongBody[2] and C_SmallBody[1] and C_LongBody
     if C_DownTrend and C_BlackBody[2] and C_BodyHi[1] <= (C_BodyLo[2] + pert * C_BodyAvg) and C_WhiteBody and C_BodyHi >= C_BodyMiddle[2] and C_BodyHi < C_BodyHi[2] and C_BodyHi[1] <= (C_BodyLo + pert * C_BodyAvg)
         C_MorningStarBullish := true
-alertcondition(C_MorningStarBullish, title = "Morning Star – Bullish", message = "New Morning Star – Bullish pattern detected")
 if C_MorningStarBullish  and  MorningStarInput and (("Bullish" == CandleType) or CandleType == "Both")
 
     var ttBullishMorningStar = "启明星 Morning Star\n长-短-长三根，第一和第三根位于中央短实体之上。位于下跌趋势表示看涨信号。确认后形成支撑位。"
@@ -338,7 +329,6 @@ C_EveningStarBearish = false
 if C_LongBody[2] and C_SmallBody[1] and C_LongBody
     if C_UpTrend and C_WhiteBody[2] and C_BodyLo[1] >= (C_BodyHi[2] - pert * C_BodyAvg) and C_BlackBody and C_BodyLo <= C_BodyMiddle[2] and C_BodyLo > C_BodyLo[2] and C_BodyLo[1] >= (C_BodyHi - pert * C_BodyAvg)
         C_EveningStarBearish := true
-alertcondition(C_EveningStarBearish, title = "Evening Star – Bearish", message = "New Evening Star – Bearish pattern detected")
 if C_EveningStarBearish  and  EveningStarInput and (("Bearish" == CandleType) or CandleType == "Both")
 
     var ttBearishEveningStar = "黄昏星 Evening Star\n长-短-长三根，第一和第三根位于中央短实体之下。看跌信号。确认后形成阻力位。"
@@ -346,7 +336,6 @@ if C_EveningStarBearish  and  EveningStarInput and (("Bearish" == CandleType) or
 C_MarubozuWhiteBullishNumberOfCandles = 1
 C_MarubozuShadowPercentWhite = 5.0
 C_MarubozuWhiteBullish = C_WhiteBody and C_LongBody and C_UpShadow <= C_MarubozuShadowPercentWhite/100*C_Body and C_DnShadow <= C_MarubozuShadowPercentWhite/100*C_Body and C_WhiteBody
-alertcondition(C_MarubozuWhiteBullish, title = "Marubozu White – Bullish", message = "New Marubozu White – Bullish pattern detected")
 if C_MarubozuWhiteBullish  and  MarubozuWhiteInput and (("Bullish" == CandleType) or CandleType == "Both")
 
     var ttBullishMarubozuWhite = "光头光脚阳线 Marubozu White\nA Marubozu White Candle is a candlestick that does not have a shadow that extends from its candle body at either the open or the close. Marubozu is Japanese for “close-cropped” or “close-cut.” Other sources may call it a Bald or Shaven Head Candle."
@@ -354,7 +343,6 @@ if C_MarubozuWhiteBullish  and  MarubozuWhiteInput and (("Bullish" == CandleType
 C_MarubozuBlackBearishNumberOfCandles = 1
 C_MarubozuShadowPercentBearish = 5.0
 C_MarubozuBlackBearish = C_BlackBody and C_LongBody and C_UpShadow <= C_MarubozuShadowPercentBearish/100*C_Body and C_DnShadow <= C_MarubozuShadowPercentBearish/100*C_Body and C_BlackBody
-alertcondition(C_MarubozuBlackBearish, title = "Marubozu Black – Bearish", message = "New Marubozu Black – Bearish pattern detected")
 if C_MarubozuBlackBearish  and  MarubozuBlackInput and (("Bearish" == CandleType) or CandleType == "Both")
 
     var ttBearishMarubozuBlack = "光头光脚阴线 Marubozu Black\nThis is a candlestick that has no shadow, which extends from the red-bodied candle at the open, the close, or even at both. In Japanese, the name means “close-cropped” or “close-cut.” The candlestick can also be referred to as Bald or Shaven Head."
@@ -362,48 +350,41 @@ if C_MarubozuBlackBearish  and  MarubozuBlackInput and (("Bearish" == CandleType
 C_DojiNumberOfCandles = 1
 C_DragonflyDoji = C_IsDojiBody and C_UpShadow <= C_Body
 C_GravestoneDojiOne = C_IsDojiBody and C_DnShadow <= C_Body
-alertcondition(C_Doji and not C_DragonflyDoji and not C_GravestoneDojiOne, title = "Doji", message = "New Doji pattern detected")
 if C_Doji and not C_DragonflyDoji and not C_GravestoneDojiOne and DojiInput
     var ttDoji = "十字线 Doji\n开盘价与收盘价几乎相等。市场分歧，犹豫不决。注意在趋势中位置。"
     label.new(bar_index, patternLabelPosLow, text="D", style=label.style_label_up, color = label_color_neutral, textcolor=color.white, tooltip = ttDoji)
 C_GravestoneDojiBearishNumberOfCandles = 1
 C_GravestoneDojiBearish = C_IsDojiBody and C_DnShadow <= C_Body
-alertcondition(C_GravestoneDojiBearish, title = "Gravestone Doji – Bearish", message = "New Gravestone Doji – Bearish pattern detected")
 if C_GravestoneDojiBearish  and  GravestoneDojiInput and (("Bearish" == CandleType) or CandleType == "Both")
 
     var ttBearishGravestoneDoji = "墓碑十字线 Gravestone Doji\n几乎没有下影线。注意是否进一步构成十字黄昏星。多头失去动能。确认后形成阻力位。"
     label.new(bar_index, patternLabelPosHigh, text="GD", style=label.style_label_down, color = label_color_bearish, textcolor=color.white, tooltip = ttBearishGravestoneDoji)
 C_DragonflyDojiBullishNumberOfCandles = 1
 C_DragonflyDojiBullish = C_IsDojiBody and C_UpShadow <= C_Body
-alertcondition(C_DragonflyDojiBullish, title = "Dragonfly Doji – Bullish", message = "New Dragonfly Doji – Bullish pattern detected")
 if C_DragonflyDojiBullish  and  DragonflyDojiInput and (("Bullish" == CandleType) or CandleType == "Both")
 
     var ttBullishDragonflyDoji = "蜻蜓十字线 Dragonfly Doji\n下影线较长，开盘/收盘价接近最高点。反转信号。"
     label.new(bar_index, patternLabelPosLow, text="DD", style=label.style_label_up, color = label_color_bullish, textcolor=color.white, tooltip = ttBullishDragonflyDoji)
 C_HaramiCrossBullishNumberOfCandles = 2
 C_HaramiCrossBullish = C_LongBody[1] and C_BlackBody[1] and C_DownTrend[1] and C_IsDojiBody and high <= C_BodyHi[1] and low >= C_BodyLo[1]
-alertcondition(C_HaramiCrossBullish, title = "Harami Cross – Bullish", message = "New Harami Cross – Bullish pattern detected")
 if C_HaramiCrossBullish  and  HaramiCrossInput and (("Bullish" == CandleType) or CandleType == "Both")
 
     var ttBullishHaramiCross = "十字看涨孕线 Harami Cross\n第一根长实体包裹住第二根十字。处于明确趋势中，反转信号，第一根是阳线反转则信心更强，第二根越背离第一根中线往顶部走则上涨信号越强，否则可能横盘。"
     label.new(bar_index, patternLabelPosLow, text="HC", style=label.style_label_up, color = label_color_bullish, textcolor=color.white, tooltip = ttBullishHaramiCross)
 C_HaramiCrossBearishNumberOfCandles = 2
 C_HaramiCrossBearish = C_LongBody[1] and C_WhiteBody[1] and C_UpTrend[1] and C_IsDojiBody and high <= C_BodyHi[1] and low >= C_BodyLo[1]
-alertcondition(C_HaramiCrossBearish, title = "Harami Cross – Bearish", message = "New Harami Cross – Bearish pattern detected")
 if C_HaramiCrossBearish  and  HaramiCrossInput and (("Bearish" == CandleType) or CandleType == "Both")
 
     var ttBearishHaramiCross = "十字看跌孕线 Harami Cross\n第一根长实体包裹住第二根十字。处于明确趋势中，反转信号，第一根是阴线反转则信心更强，第二根越背离第一根中线往底部走则下跌信号越强，否则可能横盘。"
     label.new(bar_index, patternLabelPosHigh, text="HC", style=label.style_label_down, color = label_color_bearish, textcolor=color.white, tooltip = ttBearishHaramiCross)
 C_HaramiBullishNumberOfCandles = 2
 C_HaramiBullish = C_LongBody[1] and C_BlackBody[1] and C_DownTrend[1] and C_WhiteBody and C_SmallBody and high <= C_BodyHi[1] and low >= C_BodyLo[1]
-alertcondition(C_HaramiBullish, title = "Harami – Bullish", message = "New Harami – Bullish pattern detected")
 if C_HaramiBullish  and  HaramiInput and (("Bullish" == CandleType) or CandleType == "Both")
 
     var ttBullishHarami = "看涨孕线 Harami\n第一根长实体包裹住第二根短实体。处于明确趋势中，反转信号，第一根线反转则信心更强，第二根越背离第一根中线则反转越强，否则可能横盘。"
     label.new(bar_index, patternLabelPosLow, text="BH", style=label.style_label_up, color = label_color_bullish, textcolor=color.white, tooltip = ttBullishHarami)
 C_HaramiBearishNumberOfCandles = 2
 C_HaramiBearish = C_LongBody[1] and C_WhiteBody[1] and C_UpTrend[1] and C_BlackBody and C_SmallBody and high <= C_BodyHi[1] and low >= C_BodyLo[1]
-alertcondition(C_HaramiBearish, title = "Harami – Bearish", message = "New Harami – Bearish pattern detected")
 if C_HaramiBearish  and  HaramiInput and (("Bearish" == CandleType) or CandleType == "Both")
 
     var ttBearishHarami = "看跌孕线 Harami\n第一根长实体包裹住第二根短实体。处于明确趋势中，反转信号，第一根线反转则信心更强，第二根越背离第一根中线则反转越强，否则可能横盘。"
@@ -411,7 +392,6 @@ if C_HaramiBearish  and  HaramiInput and (("Bearish" == CandleType) or CandleTyp
 C_LongLowerShadowBullishNumberOfCandles = 1
 C_LongLowerShadowPercent = 75.0
 C_LongLowerShadowBullish = C_DnShadow > C_Range/100*C_LongLowerShadowPercent
-alertcondition(C_LongLowerShadowBullish, title = "Long Lower Shadow – Bullish", message = "New Long Lower Shadow – Bullish pattern detected")
 if C_LongLowerShadowBullish  and  LongLowerShadowInput and (("Bullish" == CandleType) or CandleType == "Both")
 
     var ttBullishLongLowerShadow = "长下影线 Long Lower Shadow\nTo indicate seller domination of the first part of a session, candlesticks will present with long lower shadows and short upper shadows, consequently lowering prices."
@@ -419,7 +399,6 @@ if C_LongLowerShadowBullish  and  LongLowerShadowInput and (("Bullish" == Candle
 C_LongUpperShadowBearishNumberOfCandles = 1
 C_LongShadowPercent = 75.0
 C_LongUpperShadowBearish = C_UpShadow > C_Range/100*C_LongShadowPercent
-alertcondition(C_LongUpperShadowBearish, title = "Long Upper Shadow – Bearish", message = "New Long Upper Shadow – Bearish pattern detected")
 if C_LongUpperShadowBearish  and  LongUpperShadowInput and (("Bearish" == CandleType) or CandleType == "Both")
 
     var ttBearishLongUpperShadow = "长上影线 Long Upper Shadow\nTo indicate buyer domination of the first part of a session, candlesticks will present with long upper shadows, as well as short lower shadows, consequently raising bidding prices."
@@ -428,7 +407,6 @@ C_SpinningTopWhiteNumberOfCandles = 1
 C_SpinningTopWhitePercent = 34.0
 C_IsSpinningTopWhite = C_DnShadow >= C_Range / 100 * C_SpinningTopWhitePercent and C_UpShadow >= C_Range / 100 * C_SpinningTopWhitePercent and not C_IsDojiBody
 C_SpinningTopWhite = C_IsSpinningTopWhite and C_WhiteBody
-alertcondition(C_SpinningTopWhite, title = "Spinning Top White", message = "New Spinning Top White pattern detected")
 if C_SpinningTopWhite and SpinningTopWhiteInput
     var ttSpinningTopWhite = "纺锤阳线 Spinning Top White\nWhite spinning tops are candlestick lines that are small, green-bodied, and possess shadows (upper and lower) that end up exceeding the length of candle bodies. They often signal indecision between buyer and seller."
     label.new(bar_index, patternLabelPosLow, text="STW", style=label.style_label_up, color = label_color_neutral, textcolor=color.white, tooltip = ttSpinningTopWhite)
@@ -436,7 +414,6 @@ C_SpinningTopBlackNumberOfCandles = 1
 C_SpinningTopBlackPercent = 34.0
 C_IsSpinningTop = C_DnShadow >= C_Range / 100 * C_SpinningTopBlackPercent and C_UpShadow >= C_Range / 100 * C_SpinningTopBlackPercent and not C_IsDojiBody
 C_SpinningTopBlack = C_IsSpinningTop and C_BlackBody
-alertcondition(C_SpinningTopBlack, title = "Spinning Top Black", message = "New Spinning Top Black pattern detected")
 if C_SpinningTopBlack and SpinningTopBlackInput
     var ttSpinningTopBlack = "纺锤阴线 Spinning Top Black\nBlack spinning tops are candlestick lines that are small, red-bodied, and possess shadows (upper and lower) that end up exceeding the length of candle bodies. They often signal indecision."
     label.new(bar_index, patternLabelPosLow, text="STB", style=label.style_label_up, color = label_color_neutral, textcolor=color.white, tooltip = ttSpinningTopBlack)
@@ -447,7 +424,6 @@ C_ThreeWhiteSoldiersBullish = false
 if C_LongBody and C_LongBody[1] and C_LongBody[2]
     if C_WhiteBody and C_WhiteBody[1] and C_WhiteBody[2]
         C_ThreeWhiteSoldiersBullish := close > close[1] and close[1] > close[2] and open > open[1] and open[1] > open[2] and C_3WSld_HaveNotUpShadow and C_3WSld_HaveNotUpShadow[1] and C_3WSld_HaveNotUpShadow[2]
-alertcondition(C_ThreeWhiteSoldiersBullish, title = "Three White Soldiers – Bullish", message = "New Three White Soldiers – Bullish pattern detected")
 if C_ThreeWhiteSoldiersBullish  and  ThreeWhiteSoldiersInput and (("Bullish" == CandleType) or CandleType == "Both")
 
     var ttBullishThreeWhiteSoldiers = "前进三兵 Three White Soldiers\n三根连续阳线，开盘价均在前一根烛线的烛身范围内，而收盘价均超过前一根烛线的最高点。强劲买压。"
@@ -459,35 +435,30 @@ C_ThreeBlackCrowsBearish = false
 if C_LongBody and C_LongBody[1] and C_LongBody[2]
     if C_BlackBody and C_BlackBody[1] and C_BlackBody[2]
         C_ThreeBlackCrowsBearish := close < close[1] and close[1] < close[2] and open < open[1] and open[1] < open[2] and C_3BCrw_HaveNotDnShadow and C_3BCrw_HaveNotDnShadow[1] and C_3BCrw_HaveNotDnShadow[2]
-alertcondition(C_ThreeBlackCrowsBearish, title = "Three Black Crows – Bearish", message = "New Three Black Crows – Bearish pattern detected")
 if C_ThreeBlackCrowsBearish  and  ThreeBlackCrowsInput and (("Bearish" == CandleType) or CandleType == "Both")
 
     var ttBearishThreeBlackCrows = "三只乌鸦 Three Black Crows\n三根连续阴线，开盘价均在前一根实体范围内，而收盘价均低于前一根阴线的最低点。强劲卖压。"
     label.new(bar_index, patternLabelPosHigh, text="3BC", style=label.style_label_down, color = label_color_bearish, textcolor=color.white, tooltip = ttBearishThreeBlackCrows)
 C_EngulfingBullishNumberOfCandles = 2
 C_EngulfingBullish = C_DownTrend and C_WhiteBody and C_LongBody and C_BlackBody[1] and close >= open[1]
-alertcondition(C_EngulfingBullish, title = "Engulfing – Bullish", message = "New Engulfing – Bullish pattern detected")
 if C_EngulfingBullish  and  EngulfingInput and (("Bullish" == CandleType) or CandleType == "Both")
 
     var ttBullishEngulfing = "多头吞没 Engulfing\n第二根阳线包裹住第一根阴线。处于明确下跌趋势中，反转信号。确认后形成支撑位。"
     label.new(bar_index, patternLabelPosLow, text="BE", style=label.style_label_up, color = label_color_bullish, textcolor=color.white, tooltip = ttBullishEngulfing)
 C_EngulfingBearishNumberOfCandles = 2
 C_EngulfingBearish = C_UpTrend and C_BlackBody and C_LongBody and C_WhiteBody[1] and close <= open[1]
-alertcondition(C_EngulfingBearish, title = "Engulfing – Bearish", message = "New Engulfing – Bearish pattern detected")
 if C_EngulfingBearish  and  EngulfingInput and (("Bearish" == CandleType) or CandleType == "Both")
 
     var ttBearishEngulfing = "空头吞没 Engulfing\n第二根阴线包裹住第一根阳线。处于明确上升趋势中，反转信号。确认后形成阻力位。"
     label.new(bar_index, patternLabelPosHigh, text="BE", style=label.style_label_down, color = label_color_bearish, textcolor=color.white, tooltip = ttBearishEngulfing)
 C_AbandonedBabyBullishNumberOfCandles = 3
 C_AbandonedBabyBullish = C_DownTrend[2] and C_BlackBody[2] and C_IsDojiBody[1] and low[2] > high[1] and C_WhiteBody and high[1] < low
-alertcondition(C_AbandonedBabyBullish, title = "Abandoned Baby – Bullish", message = "New Abandoned Baby – Bullish pattern detected")
 if C_AbandonedBabyBullish  and  AbandonedBabyInput and (("Bullish" == CandleType) or CandleType == "Both")
 
     var ttBullishAbandonedBaby = "看涨弃婴 Abandoned Baby\nThis candlestick pattern is quite rare as far as reversal patterns go. The first of the pattern is a large down candle. Next comes a doji candle that gaps below the candle before it. The doji candle is then followed by another candle that opens even higher and swiftly moves to the upside."
     label.new(bar_index, patternLabelPosLow, text="AB", style=label.style_label_up, color = label_color_bullish, textcolor=color.white, tooltip = ttBullishAbandonedBaby)
 C_AbandonedBabyBearishNumberOfCandles = 3
 C_AbandonedBabyBearish = C_UpTrend[2] and C_WhiteBody[2] and C_IsDojiBody[1] and high[2] < low[1] and C_BlackBody and low[1] > high
-alertcondition(C_AbandonedBabyBearish, title = "Abandoned Baby – Bearish", message = "New Abandoned Baby – Bearish pattern detected")
 if C_AbandonedBabyBearish  and  AbandonedBabyInput and (("Bearish" == CandleType) or CandleType == "Both")
 
     var ttBearishAbandonedBaby = "看跌弃婴 Abandoned Baby\nA bearish abandoned baby is a specific candlestick pattern that often signals a downward reversal trend in terms of security price. It is formed when a gap appears between the lowest price of a doji-like candle and the candlestick of the day before. The earlier candlestick is green, tall, and has small shadows. The doji candle is also tailed by a gap between its lowest price point and the highest price point of the candle that comes next, which is red, tall and also has small shadows. The doji candle shadows must completely gap either below or above the shadows of the first and third day in order to have the abandoned baby pattern effect."
@@ -497,7 +468,6 @@ C_3DojisBullish = C_Doji[2] and C_Doji[1] and C_Doji
 C_BodyGapUpBullish = C_BodyHi[1] < C_BodyLo
 C_BodyGapDnBullish = C_BodyLo[1] > C_BodyHi
 C_TriStarBullish = C_3DojisBullish and C_DownTrend[2] and C_BodyGapDnBullish[1] and C_BodyGapUpBullish
-alertcondition(C_TriStarBullish, title = "Tri-Star – Bullish", message = "New Tri-Star – Bullish pattern detected")
 if C_TriStarBullish  and  TriStarInput and (("Bullish" == CandleType) or CandleType == "Both")
 
     var ttBullishTriStar = "三星看涨形态 Tri-Star\nA bullish TriStar candlestick pattern can form when three doji candlesticks materialize in immediate succession at the tail-end of an extended downtrend. The first doji candle marks indecision between bull and bear. The second doji gaps in the direction of the leading trend. The third changes the attitude of the market once the candlestick opens in the direction opposite to the trend. Each doji candle has a shadow, all comparatively shallow, which signify an interim cutback in volatility."
@@ -507,7 +477,6 @@ C_3Dojis = C_Doji[2] and C_Doji[1] and C_Doji
 C_BodyGapUp = C_BodyHi[1] < C_BodyLo
 C_BodyGapDn = C_BodyLo[1] > C_BodyHi
 C_TriStarBearish = C_3Dojis and C_UpTrend[2] and C_BodyGapUp[1] and C_BodyGapDn
-alertcondition(C_TriStarBearish, title = "Tri-Star – Bearish", message = "New Tri-Star – Bearish pattern detected")
 if C_TriStarBearish  and  TriStarInput and (("Bearish" == CandleType) or CandleType == "Both")
 
     var ttBearishTriStar = "三星看跌形态 Tri-Star\nThis particular pattern can form when three doji candlesticks appear in immediate succession at the end of an extended uptrend. The first doji candle marks indecision between bull and bear. The second doji gaps in the direction of the leading trend. The third changes the attitude of the market once the candlestick opens in the direction opposite to the trend. Each doji candle has a shadow, all comparatively shallow, which signify an interim cutback in volatility."
@@ -518,7 +487,6 @@ C_Marubozu = C_LongBody and C_UpShadow <= C_MarubozuShadowPercent/100*C_Body and
 C_MarubozuWhiteBullishKicking = C_Marubozu and C_WhiteBody
 C_MarubozuBlackBullish = C_Marubozu and C_BlackBody
 C_KickingBullish = C_MarubozuBlackBullish[1] and C_MarubozuWhiteBullishKicking and high[1] < low
-alertcondition(C_KickingBullish, title = "Kicking – Bullish", message = "New Kicking – Bullish pattern detected")
 if C_KickingBullish  and  KickingInput and (("Bullish" == CandleType) or CandleType == "Both")
 
     var ttBullishKicking = "看跌反冲 Kicking\nThe first day candlestick is a bearish marubozu candlestick with next to no upper or lower shadow and where the price opens at the day’s high and closes at the day’s low. The second day is a bullish marubozu pattern, with next to no upper or lower shadow and where the price opens at the day’s low and closes at the day’s high. Additionally, the second day gaps up extensively and opens above the opening price of the day before. This gap or window, as the Japanese call it, lies between day one and day two’s bullish candlesticks."
@@ -529,10 +497,82 @@ C_MarubozuBearishKicking = C_LongBody and C_UpShadow <= C_MarubozuBullishShadowP
 C_MarubozuWhiteBearish = C_MarubozuBearishKicking and C_WhiteBody
 C_MarubozuBlackBearishKicking = C_MarubozuBearishKicking and C_BlackBody
 C_KickingBearish = C_MarubozuWhiteBearish[1] and C_MarubozuBlackBearishKicking and low[1] > high
-alertcondition(C_KickingBearish, title = "Kicking – Bearish", message = "New Kicking – Bearish pattern detected")
 if C_KickingBearish  and  KickingInput and (("Bearish" == CandleType) or CandleType == "Both")
 
     var ttBearishKicking = "看跌反冲 Kicking\nA bearish kicking pattern will occur, subsequently signaling a reversal for a new downtrend. The first day candlestick is a bullish marubozu. The second day gaps down extensively and opens below the opening price of the day before. There is a gap between day one and two’s bearish candlesticks."
     label.new(bar_index, patternLabelPosHigh, text="K", style=label.style_label_down, color = label_color_bearish, textcolor=color.white, tooltip = ttBearishKicking)
     var ttAllCandlestickPatterns = "All Candlestick Patterns\n"
     label.new(bar_index, patternLabelPosLow, text="Collection", style=label.style_label_up, color = label_color_neutral, textcolor=color.white, tooltip = ttAllCandlestickPatterns)
+
+// === Input A ===
+
+
+// === Input B ===
+
+
+// === Input C ===
+
+
+// ##################
+// === Indicators ===
+// ##################
+
+// === Indicator A ===
+
+
+// === Indicator B ===
+
+
+// === Indicator C ===
+
+
+// ##################
+// === Conditions ===
+// ##################
+
+// === Condition A ===
+
+
+// === Condition B ===
+
+
+// === Condition C ===
+
+
+// #######################
+// === Risk Management ===
+// #######################
+
+// === Stop-loss ===
+stopLoss   = input(3, "Stop Loss")
+var float stopLossPrice = na
+
+// === Take-profit ===
+takeProfit = input(30, "Take Profit")
+var float takeProfitPrice = na
+
+// #######################
+// === Order Execution ===
+// #######################
+
+// === Execute long entry ===
+if enterLong
+    stopLossPrice   := close * (1 - stopLoss/100)
+    takeProfitPrice := close * (1 + takeProfit/100)
+    strategy.entry("Long", strategy.long, qty = _qty)
+    strategy.exit("exit", "Long", stop = stopLossPrice, limit = takeProfitPrice)
+
+// === Execute long exit ===
+if exitLong
+    strategy.close("Long", qty_percent=100)
+
+// === Execute short entry ===
+if enterShort
+    stopLossPrice   := close * (1 + stopLoss/100)
+    takeProfitPrice := close * (1 - takeProfit/100)
+    strategy.entry("Short", strategy.short, qty = _qty)
+    strategy.exit("Exit", "Short", stop = stopLossPrice, limit = takeProfitPrice)
+
+// === Execute short exit ===
+if exitShort
+    strategy.close("Short", qty_percent = 100)
