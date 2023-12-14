@@ -17,14 +17,18 @@ strategy(title = "Strategy",
 // #######################
 
 // === Equity Usage ===
+// 只使用90%的账面资金交易，保留10%作为紧急流动性来源
 equityUsage = input(0.9, title="Equity Usage Percentage")
 _qty = (strategy.equity * equityUsage) / close
 
-// === Input A ===
+// === Input A Bollinger Bands ===
+bollLength      = input.int(21, minval=1)
+bollMult        = input.float(2.0, minval=0.001, maxval=50, title="StdDev")
 
-
-// === Input B ===
-
+// === Input B MACD===
+fastLength      = input.int(12, title="Fast Length")
+slowLength      = input.int(26, title="Slow Length")
+signalLength    = input.int(9, title="Signal Length")
 
 // === Input C ===
 
@@ -33,11 +37,15 @@ _qty = (strategy.equity * equityUsage) / close
 // === Indicators ===
 // ##################
 
-// === Indicator A ===
-
+// === Indicator A Bollinger Bands ===
+bollBasis = ta.ema(hlc3, bollLength)
+bollDev = bollMult * ta.stdev(hlc3, bollLength)
+bollUpper = bollBasis + bollDev
+bollLower = bollBasis - bollDev
 
 // === Indicator B ===
-
+[macdCore, macdSignal, macdHist] = ta.macd(hlc3, fastLength, slowLength, signalLength)
+macdHistDiff = macdHist - macdHist[1]
 
 // === Indicator C ===
 
