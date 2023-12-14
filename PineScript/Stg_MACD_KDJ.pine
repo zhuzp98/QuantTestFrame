@@ -1,0 +1,109 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © rhapsodyz
+
+//@version=5
+
+// 1. Define strategy settings
+strategy(title="MACD-KDJ Double Cross Strategy", overlay=true,
+     pyramiding=0, initial_capital=100000,
+     commission_type=strategy.commission.cash_per_order,
+     commission_value=5, slippage=2)
+
+// Input parameters
+fastLength = input.int(12, title="Fast Length")
+slowLength = input.int(26, title="Slow Length")
+signalLength = input.int(9, title="Signal Length")
+kdjKLength = input.int(14, title="KDJ K Length")
+kdjDLength = input.int(3, title="KDJ D Length")
+overboughtLevel = input.int(80, title="Overbought Level")
+oversoldLevel = input.int(20, title="Oversold Level")
+
+endMonth = input.int(12, title="End Month Backtest")
+endYear  = input.int(2023, title="End Year Backtest")
+
+usePosSize = input.bool(true, title="Use Position Sizing?")
+riskPerc   = input.float(0.5, title="Risk %", step=0.25)
+
+// 2. Calculate strategy values
+// Calculate MACD
+[macdLine, signalLine, histLine] = ta.macd(close, fastLength, slowLength, signalLength)
+
+// Calculate KDJ
+kdjK = ta.stoch(close, high, low, kdjKLength)
+kdjD = ta.sma(kdjK, kdjDLength)
+kdjJ = 3 * kdjK - 2 * kdjD
+
+// Calculate EMA20
+ema20 = ta.ema(close,20)
+
+riskEquity  = (riskPerc / 100) * strategy.equity
+atrCurrency = ta.atr(20) * syminfo.pointvalue
+posSize     = usePosSize ? math.floor(riskEquity / atrCurrency) : 1
+
+tradeWindow = time <= timestamp(endYear, endMonth, 1, 0, 0)
+
+
+
+// 3. Determine strategy conditions
+// MACD Cross-over conditions
+macdCrossUp = ta.crossover(macdLine, signalLine) // Long
+macdCrossDown = ta.crossunder(macdLine, signalLine) // Short 
+
+macdLong = histLine > 0 and
+     macdLine < 0
+macdShort = histLine < 0 and
+     macdLine > 0 
+
+// KDJ Cross-over conditions
+kdjCrossUp = ta.crossover(kdjK, kdjD)
+kdjCrossDown = ta.crossunder(kdjK, kdjD)
+
+kdjBuy = kdjK > kdjD and
+     kdjJ > kdjK * 1.1 and
+     kdjK < 30 and
+     kdjD < 30 and
+     kdjJ < 30
+kdjSell = kdjK < kdjD and
+     kdjJ < kdjK * 0.9 and
+     kdjK > 70 and
+     kdjD > 70 and
+     kdjJ > 70
+
+// 4. Determine long trading conditions
+enterLong = macdLong and
+     kdjBuy and
+     tradeWindow
+
+exitLong = (macdCrossDown and macdLine > 0) or
+     kdjCrossDown
+
+// 5. Code short trading conditions
+enterShort = macdShort and
+     kdjSell and 
+     tradeWindow
+
+exitShort = (macdCrossUp and macdLine < 0) or
+     kdjCrossUp
+
+// 6. Plottings
+// Plotting signals on the chart
+plotshape(series=macdCrossUp and kdjCrossUp, title="Buy Signal", color=color.green, style=shape.labelup, location=location.belowbar, text="Buy")
+plotshape(series=macdCrossDown and kdjCrossDown, title="Sell Signal", color=color.red, style=shape.labeldown, location=location.abovebar, text="Sell")
+
+// Plotting overbought/oversold levels
+hline(overboughtLevel, "Overbought Level", color=color.red)
+hline(oversoldLevel, "Oversold Level", color=color.green)
+
+// 7. Submit entry orders
+if enterLong
+    strategy.entry("EL", strategy.long, qty=posSize)
+
+if enterShort
+    strategy.entry("ES", strategy.short, qty=posSize)
+
+// 8. Submit exit orders
+if exitLong
+    strategy.close("EL")
+
+if exitShort
+    strategy.close("ES")

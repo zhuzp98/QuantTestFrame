@@ -8,14 +8,14 @@ rsiLength       = input.int(14, minval=1, title="RSI Length", group="RSI Setting
 rsiSource       = input.source(hlc3, "RSI Source", group="RSI Settings")
 rsiMALength     = input.int(14, title="MA Length", group="Boll Settings")
 rsiBollMult     = input.float(2.0, minval=0.001, maxval=50, title="Boll StdDev", group="Boll Settings")
-
+showDivergence  = input.bool(false, title="Show Divergence", group="RSI Settings")
 isBB = true
 up = ta.rma(math.max(ta.change(rsiSource), 0), rsiLength)
 down = ta.rma(-math.min(ta.change(rsiSource), 0), rsiLength)
 rsi = down == 0 ? 50 : up == 0 ? -50 : 50 - (100 / (1 + up / down))
 rsiMA = ta.sma(rsi, rsiMALength)
 
-rsiDiv = (rsi - rsiMA) * 10 / (ta.stdev(rsi, rsiMALength) * rsiBollMult)
+rsiDiv = (rsi - rsiMA)/ (ta.stdev(rsi, rsiMALength) * rsiBollMult)
 
 rsiBollUpper = rsiMA + ta.stdev(rsi, rsiMALength) * rsiBollMult
 rsiBollLower = rsiMA - ta.stdev(rsi, rsiMALength) * rsiBollMult
@@ -36,3 +36,4 @@ fill(rsiPlot, midLinePlot, 50, 20, top_color = color.new(color.green, 0), bottom
 fill(rsiPlot, midLinePlot, -20,  -50,  top_color = color.new(color.red, 100), bottom_color = color.new(color.red, 0),      title = "Oversold Gradient Fill")
 
 plot(rsiDiv, title = "rsiDiv", style = plot.style_columns, color = (rsiDiv >= 0 ? (rsiDiv[1] < rsiDiv ? #26A69A : #B2DFDB) : (rsiDiv[1] < rsiDiv ? #FFCDD2 : #FF5252)))
+
