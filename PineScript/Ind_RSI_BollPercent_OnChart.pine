@@ -2,7 +2,7 @@
 // © rhapsodyz
 
 //@version=5
-indicator(title="RSI with Boll %B", shorttitle="RSI %B", format=format.price, precision=2, timeframe="", timeframe_gaps=true)
+indicator(title="RSI with Boll %B on Chart", shorttitle="RSI %B onC", overlay=true, format=format.price, precision=2, timeframe="", timeframe_gaps=true)
 
 rsiLength       = input.int(14, minval=1, title="RSI Length", group="RSI Settings")
 rsiSource       = input.source(hlc3, "RSI Source", group="RSI Settings")
@@ -17,9 +17,14 @@ rsiMA = ta.sma(rsi, rsiMALength)
 
 rsiDiv = (rsi - rsiMA) / (ta.stdev(rsi, rsiMALength) * rsiBollMult)
 
+break_up = false
+break_down = false
 
-plot(rsiDiv, "RSI Boll %B", color=#26A69A)
-band1 = hline(1, "Overbought", color=#787B86, linestyle=hline.style_dashed)
-hline(0, "Middle Band", color=color.new(#787B86, 50))
-band0 = hline(-1, "Oversold", color=#787B86, linestyle=hline.style_dashed)
-fill(band1, band0, color=color.rgb(38, 166, 154, 90), title="Background")
+if rsiDiv[1] < -1 and rsi[1] <= -20
+    break_down := true
+
+if rsiDiv[1] > 1 and rsi[1] >= 20
+    break_up := true
+
+plotchar(break_up, 'RSI Bought Breakout', '▼', location.abovebar, #f23645)
+plotchar(break_down, 'RSI Sold Breakout', '▲', location.belowbar, #089981)

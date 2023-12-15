@@ -9,7 +9,6 @@ rsiSource       = input.source(hlc3, "RSI Source", group="RSI Settings")
 rsiMALength     = input.int(14, title="MA Length", group="Boll Settings")
 rsiBollMult     = input.float(2.0, minval=0.001, maxval=50, title="Boll StdDev", group="Boll Settings")
 
-isBB = true
 up = ta.rma(math.max(ta.change(rsiSource), 0), rsiLength)
 down = ta.rma(-math.min(ta.change(rsiSource), 0), rsiLength)
 rsi = down == 0 ? 50 : up == 0 ? -50 : 50 - (100 / (1 + up / down))
