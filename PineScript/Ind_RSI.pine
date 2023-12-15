@@ -15,9 +15,10 @@ rsi = down == 0 ? 50 : up == 0 ? -50 : 50 - (100 / (1 + up / down))
 rsiMA = ta.sma(rsi, rsiMALength)
 
 rsiDiv = (rsi - rsiMA) * 10 / (ta.stdev(rsi, rsiMALength) * rsiBollMult)
+rsiBollStdev = ta.stdev(rsi, rsiMALength) * rsiBollMult
 
-rsiBollUpper = rsiMA + ta.stdev(rsi, rsiMALength) * rsiBollMult
-rsiBollLower = rsiMA - ta.stdev(rsi, rsiMALength) * rsiBollMult
+rsiBollUpper = rsiMA + rsiBollStdev
+rsiBollLower = rsiMA - rsiBollStdev
 
 
 rsiPlot = plot(rsi, "RSI", color=#7E57C2)
