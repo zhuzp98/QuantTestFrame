@@ -1,0 +1,265 @@
+//@version=3
+//@author brobear
+study(title="Fuzzy Fib Counts", shorttitle="FFC", overlay=true)
+
+// Fuzzy Fib Counts (FFC)
+//
+// Inspired by TD Sequential/Combo, this indicator counts consecutive up/down price moves. Counts 
+// help determine trend duration/exhaustion. Fibonacci numbers in the count (5, 8, 13, 21, etc) are 
+// high probablity pivot points where the trend is likely to reverse, or continue stronger.
+//
+// Indicators:
+//     Group 1 Price Count Up: number (or + symbol) above bar, green
+//     Group 1 Price Count Down: number (or + symbol) below bar, red
+//         Fib numbers also have a circle above/below bar
+//
+//     Group 2 Price Count Up: number (or * symbol) at top of chart, green
+//     Group 2 bars for Price Count Up: dashes at top of chart, gray
+//     Group 2 Price Count Down: number (or * symbol) at bottom of chart, red
+//     Group 2 bars for Price Count Down: dashes at bottom of chart, gray
+//         Fib numbers also have a circle below the number
+//
+// While TD Seq/Combo uses strick counting rules (thus targeting specific price patterns), 
+// FFC flexes in its counting strategy: the present bar's price is compared to a prior, filtered, 
+// high/low price channel. If the price is within or above the channel, "Count Up" is incremented
+// (else reset). If the price is within or below the channel, "Count Down" is incremented (else reset). 
+// At times, both up and down counts are incremented on the same bar, which brings fuzzy logic
+// thinking to trend/time charachterization. 
+// 
+// Adding fuzzy answers to a cloudy situation might seem counter intuitive, but it helps navigate 
+// neutral territory. If a trend reverses, fuzzy counts become an early reversal indicator AND counting
+// in the opposite direction starts as soon as possible. If, however, the trend continues, then
+// fuzzy counts help keep the present trend count intact, without resetting. The amount of "fuzz" 
+// (i.e. the width of the price channel) is controlled by the "Fuzz: Level" parameter.
+//
+// The big question is: Will the trend continue or reverse on (or near) a fib number?
+// Looking at counts on other time frames helps answer this question. Thus...
+//
+// This indicator counts on two time frames: Group 1 and Group 2. Group 1 counts a smaller
+// time frame (usually per bar) while Group 2 collects a number of bars for counting on a
+// larger time frame. This multi time frame view can help provide insights: reversals are likely
+// when fib numbers align in the two groups. When between fib numbers, the trend is likely
+// to continue.
+//
+// If nothing is coming into focus for your market, then adjust the settings. Have fun, explore :)
+//
+// Parameters:
+// "Price: Source" - Current bar's price, used in comparison to the previous bar's price for counting up/down
+// "Channel: Lookback" - The previous bar of the filtered, high/low channel, compared to the current bar
+// "Channel: Midpoint" - Price midpoint of the high/low channel
+//     Options: hl2 [(high-low)/2], or close
+// "Channel: Show" - Plot the price high/low channel. Visual aid, off by default.
+// "Filter: Type" - Price channel averaging
+//     Options: None = no averaging, Exp = exponential averaging, MA = moving average
+// "Filter: Exp Coef" - Coefficient of exponential filter. Only valid when filter type = Exp.
+//     Coef is equivalent to 1/length, for length >= 1
+//     Coef = 1.0, no filtering (pass through). Coef -> smaller, more filtering.
+//         Note: The advantage of using a (float) "coef" (vs "length" in Pine's rma() function)
+//               is that fractional (float) lengths are possible. 
+//               The default value is coef = 0.618, thus length = 1.618
+// "Filter: MA Length" - Moving average filter length. Only valid when filter type = MA
+// "Fuzz: Level" - Percent of price high/low channel
+//     Level = 1.0 is 100% of price channel, Level = 0.0 is 0% of price channel.
+// "Group 1: Bars" - Number of bars in group 1. This group's counts are displayed above/below each bar.
+// "Group 1: Offset" - Number of bars to offset (from the beginning of all bars) when defining group 1.
+//     Used to coorelate or de-coorelate the boundaries of group 1 and group 2
+// "Group 1: Show bars" - When "Group 1: Bars" > 1, dashes can be plotted to show which bars are 
+//     included in a group. 
+//         Note: This is a visual aid only! It has nothing to do with support/resistance lines.
+// "Group 1: Show bars Offset" - Used to tweak group 1 bars up or down on the chart. If you're looking at
+//     a crypto chart where the price is < 1, increase this offset.
+// "Group 2: Bars" - Number of bars in group 2. This group's counts are displayed at the top/bottom of the chart.
+// "Group 2: Offset" - Number of bars to offset when defining group 2. See "Group 1: Offset" above.
+// "Group 2: Show bars" - When "Group 2: Bars" > 1, dashes can be plotted to show which bars are
+//     included in a group.
+// 
+// To replicate the behavior of a TD Setup:
+//    "Price: Source" = close, "Channel: Lookback" = 4, "Channel: Midpoint" = close,
+//    "Filter: Type" = None, "Fuzz: Level" = 0, "Group 1: Bars" = 1
+//
+// Programming limitations:
+// - This indicator uses the max number of plots allowed in Pine (64). And it's not enough to plot 
+//   some numbers in the two groups... bummer. So, generic symbols are used for fib counts > 13 
+//   (+ symbol, group 1). Group 2 uses the * symbol. 
+// - For both Groups, if "Show bars" is enabled, there is a gap in the dashes at the right edge. 
+//   It's not a bug... just an unfortunate side effect of how groups are managed in the script verses 
+//   plotting dashes for the groups.
+// - If "Group 1: Bars" > 1 and "Group 1: Show bars" = true, you may need to tweak 
+//   "Group 1: Show bars Offset". Increase the offset to lift the dashes away from the bars. Decrease
+//   to bring the dashes closer.
+//   
+
+//----- User inputs ---------------------
+PriceSource = input(title="Price: Source", type=source, defval=hlc3)
+ChannelLookback = input(title="Channel: Lookback", type=integer, defval=1, minval=1, maxval=144)
+ChannelMid = input(title="Channel: Midpoint", type=string, defval="hl2", options=["hl2", "close"])
+ChannelShow = input(title="Channel: Show", type=bool, defval=false)
+FilterType = input(title="Filter: Type", type=string, defval="exp", options=["exp", "sma", "none"])
+FilterExpCoef = input(title="Filter: Exp Coef", type=float, defval=0.618, minval=0.0, maxval=1.0)
+FilterMaLen = input(title="Filter: MA Length", type=integer, defval=3, minval=1, maxval=500)
+FuzzLevel = input(title="Fuzz: Level", type=float, defval=0.618, minval=0.0, maxval=10.0)
+Group1Bars = input(title="Group 1: Bars", type=integer, defval=1, minval=1, maxval=987)
+Group1Offset = input(title="Group 1: Offset", type=integer, defval=0, minval=0, maxval=144)
+Group1ShowBars = input(title="Group 1: Show bars", type=bool, defval=false)
+Group1ShowBarsOffset = input(title="Group 1: Show bars Offset", type=float, defval=0.3, minval=0.01, maxval=2.0)
+Group2Bars = input(title="Group 2: Bars", type=integer, defval=5, minval=1, maxval=987)
+Group2Offset = input(title="Group 2: Offset", type=integer, defval=1, minval=0, maxval=144)
+Group2ShowBars = input(title="Group 2: Show bars", type=bool, defval=true)
+
+//----- Initialize ---------------------
+UP = 1
+DOWN = 2
+group1 = na
+group1 := (((n+Group1Offset) % Group1Bars) == 0) ? true : false
+group2 = na
+group2 := (((n+Group2Offset) % Group2Bars) == 0) ? true : false
+
+//----- Function: Filter (average) price ---------------------
+filter(grp, x) =>
+    y = na
+    if FilterType=="none"
+        y := x
+    if FilterType=="exp"
+        y := grp ? (nz(y[1]) + (FilterExpCoef * (x - nz(y[1])))) : nz(y[1])
+    if FilterType=="sma"
+        y := grp ? sma(x, FilterMaLen) : nz(y[1])
+    y
+
+//----- Function: Count price moves ---------------------
+// Compare input PriceSource with previous price and count consecutive up or down moves
+countPrice(direction, grp, price) =>
+    count = na
+    count := 
+       (direction==UP) ? 
+          grp ? ((PriceSource >= price[ChannelLookback]) ? nz(count[1])+1 : 0) : nz(count[1]) :
+       (direction==DOWN) ? 
+          grp ? ((PriceSource <= price[ChannelLookback]) ? nz(count[1])+1 : 0) : nz(count[1]) :
+       na
+    count
+
+//---- Function: Get Price Channel ---------------------
+getPriceChannel(grp, numBars) =>
+    pHigh = na, pLow = na, pMidHigh = na, pMidLow = na
+    pFuzzHigh = na, pFuzzLow = na, pFiltHigh = na, pFiltLow = na
+    pHigh := grp ? highest(numBars) : nz(pHigh[1])
+    pLow := grp ? lowest(numBars) : nz(pLow[1])
+    pMidHigh := ChannelMid=="hl2" ? (grp ? (pHigh - pLow)/2.0 : nz(pMidHigh[1])) : (grp ? (pHigh - close) : nz(pMidHigh[1]))
+    pMidLow := ChannelMid=="hl2" ? (grp ? (pHigh - pLow)/2.0 : nz(pMidLow[1])) : (grp ? (close - pLow) : nz(pMidLow[1]))
+    pFuzzHigh := pMidHigh*FuzzLevel
+    pFuzzLow := pMidLow*FuzzLevel
+    pFiltHigh := filter(grp, pLow+pMidLow+pFuzzHigh)
+    pFiltLow := filter(grp, pHigh-pMidHigh-pFuzzLow)
+    [pFiltHigh, pFiltLow]
+
+//---- Group 1 ---------------------
+[price1High, price1Low] = getPriceChannel(group1, Group1Bars)
+c1Up = countPrice(UP, group1, price1Low)
+c1Down = countPrice(DOWN, group1, price1High)
+
+plotC1UpMask = na
+plotC1UpMask := group1 ? c1Up>0 ? (price1High+Group1ShowBarsOffset*(price1High-price1Low)) : na : plotC1UpMask[1]
+plotC1DownMask = na
+plotC1DownMask := group1 ? c1Down>0 ? (price1Low-2*Group1ShowBarsOffset*(price1High-price1Low)) : na : plotC1DownMask[1]
+
+//---- Group 2 ---------------------
+[price2High, price2Low] = getPriceChannel(group2, Group2Bars)
+c2Up = countPrice(UP, group2, price2Low)
+c2Down = countPrice(DOWN, group2, price2High)
+
+plotC2UpMask = na
+plotC2UpMask := group2 ? c2Up>0 ? true : na : plotC2UpMask[1]
+plotC2DownMask = na
+plotC2DownMask := group2 ? c2Down>0 ? true : na : plotC2DownMask[1]
+
+//---- Plotting ---------------------
+plot(ChannelShow?price1High:na, title="Price Channel High", style=line, color=#FF4444, linewidth=1)
+plot(ChannelShow?price1Low:na, title="Price Channel Low", style=line, color=green, linewidth=1)
+// plot(PriceSource, style=line, color=yellow, linewidth=1)  // debug
+
+plotshape(group1 and (c1Up==1) ?plotC1UpMask:na, style=shape.circle, text="1",  textcolor=green, color=#88888800, location=location.abovebar, size=size.auto, editable=false)
+plotshape(group1 and (c1Up==2) ?plotC1UpMask:na, style=shape.circle, text="2",  textcolor=green, color=#88888800, location=location.abovebar, size=size.auto, editable=false)
+plotshape(group1 and (c1Up==3) ?plotC1UpMask:na, style=shape.circle, text="3",  textcolor=green, color=#88888800, location=location.abovebar, size=size.auto, editable=false)
+plotshape(group1 and (c1Up==4) ?plotC1UpMask:na, style=shape.circle, text="4",  textcolor=green, color=#88888800, location=location.abovebar, size=size.auto, editable=false)
+plotshape(group1 and (c1Up==5) ?plotC1UpMask:na, style=shape.circle, text="5",  textcolor=green, color=#00FF00,   location=location.abovebar, size=size.auto, editable=false)
+plotshape(group1 and (c1Up==6) ?plotC1UpMask:na, style=shape.circle, text="6",  textcolor=green, color=#88888800, location=location.abovebar, size=size.auto, editable=false)
+plotshape(group1 and (c1Up==7) ?plotC1UpMask:na, style=shape.circle, text="7",  textcolor=green, color=#88888800, location=location.abovebar, size=size.auto, editable=false)
+plotshape(group1 and (c1Up==8) ?plotC1UpMask:na, style=shape.circle, text="8",  textcolor=green, color=#00FF00,   location=location.abovebar, size=size.auto, editable=false)
+plotshape(group1 and (c1Up==9) ?plotC1UpMask:na, style=shape.circle, text="9",  textcolor=green, color=#88888800, location=location.abovebar, size=size.auto, editable=false)
+plotshape(group1 and (c1Up==10)?plotC1UpMask:na, style=shape.circle, text="10", textcolor=green, color=#88888800, location=location.abovebar, size=size.auto, editable=false)
+plotshape(group1 and (c1Up==11)?plotC1UpMask:na, style=shape.circle, text="11", textcolor=green, color=#88888800, location=location.abovebar, size=size.auto, editable=false)
+plotshape(group1 and (c1Up==12)?plotC1UpMask:na, style=shape.circle, text="12", textcolor=green, color=#88888800, location=location.abovebar, size=size.auto, editable=false)
+plotshape(group1 and (c1Up==13)?plotC1UpMask:na, style=shape.circle, text="13", textcolor=green, color=#00FF00,   location=location.abovebar, size=size.auto, editable=false)
+//plotshape(group1 and (c1Up==14)?plotC1UpMask:na, style=shape.circle, text="14", textcolor=green, color=#88888800, location=location.abovebar, size=size.auto, editable=false)
+plotshape(group1 and (c1Up==15)?plotC1UpMask:na, style=shape.circle, text="15", textcolor=green, color=#88888800, location=location.abovebar, size=size.auto, editable=false)
+//plotshape(group1 and (c1Up==16)?plotC1UpMask:na, style=shape.circle, text="16", textcolor=green, color=#88888800, location=location.abovebar, size=size.auto, editable=false)
+plotshape(group1 and (c1Up==17)?plotC1UpMask:na, style=shape.circle, text="17", textcolor=green, color=#88888800, location=location.abovebar, size=size.auto, editable=false)
+//plotshape(group1 and (c1Up==18)?plotC1UpMask:na, style=shape.circle, text="18", textcolor=green, color=#88888800, location=location.abovebar, size=size.auto, editable=false)
+plotshape(group1 and (c1Up==19)?plotC1UpMask:na, style=shape.circle, text="19", textcolor=green, color=#88888800, location=location.abovebar, size=size.auto, editable=false)
+//plotshape(group1 and (c1Up==20)?plotC1UpMask:na, style=shape.circle, text="20", textcolor=green, color=#88888800, location=location.abovebar, size=size.auto, editable=false)
+plotshape(group1 and (c1Up==21)?plotC1UpMask:na, style=shape.circle, text="21", textcolor=green, color=#00FF00,   location=location.abovebar, size=size.auto, editable=false)
+plotshape(group1 and (c1Up==34)?plotC1UpMask:na, style=shape.circle, text="34", textcolor=green, color=#00FF00,   location=location.abovebar, size=size.auto, editable=false)
+plotshape(group1 and (c1Up==55)?plotC1UpMask:na, style=shape.circle, text="55", textcolor=green, color=#00FF00,   location=location.abovebar, size=size.auto, editable=false)
+plotshape((group1 and (c1Up>13)and(c1Up!=15)and(c1Up!=17)and(c1Up!=19)and(c1Up!=21)and(c1Up!=34)and(c1Up!=55))?plotC1UpMask:na, title="Group 1 Generic Count Up", 
+                           style=shape.circle, text="+",  textcolor=green, color=#88888800, location=location.abovebar, size=size.auto)
+plotshape(((Group1ShowBars)and(plotC1UpMask>0))?plotC1UpMask:na, title="Group 1 Bars, Cnt Up", 
+                           style=shape.circle, text="-",  textcolor=gray, color=#88888800, location=location.absolute, size=size.auto, offset=1-Group1Bars)
+
+plotshape(group1 and (c1Down==1)? true:na, style=shape.circle, text="1",  textcolor=red, color=#88888800, location=location.belowbar, size=size.auto, editable=false)
+plotshape(group1 and (c1Down==2)? true:na, style=shape.circle, text="2",  textcolor=red, color=#88888800, location=location.belowbar, size=size.auto, editable=false)
+plotshape(group1 and (c1Down==3)? true:na, style=shape.circle, text="3",  textcolor=red, color=#88888800, location=location.belowbar, size=size.auto, editable=false)
+plotshape(group1 and (c1Down==4)? true:na, style=shape.circle, text="4",  textcolor=red, color=#88888800, location=location.belowbar, size=size.auto, editable=false)
+plotshape(group1 and (c1Down==5)? true:na, style=shape.circle, text="5",  textcolor=red, color=#FFBB00,   location=location.belowbar, size=size.auto, editable=false)
+plotshape(group1 and (c1Down==6)? true:na, style=shape.circle, text="6",  textcolor=red, color=#88888800, location=location.belowbar, size=size.auto, editable=false)
+plotshape(group1 and (c1Down==7)? true:na, style=shape.circle, text="7",  textcolor=red, color=#88888800, location=location.belowbar, size=size.auto, editable=false)
+plotshape(group1 and (c1Down==8)? true:na, style=shape.circle, text="8",  textcolor=red, color=#FFBB00,   location=location.belowbar, size=size.auto, editable=false)
+plotshape(group1 and (c1Down==9)? true:na, style=shape.circle, text="9",  textcolor=red, color=#88888800, location=location.belowbar, size=size.auto, editable=false)
+plotshape(group1 and (c1Down==10)?true:na, style=shape.circle, text="10", textcolor=red, color=#88888800, location=location.belowbar, size=size.auto, editable=false)
+plotshape(group1 and (c1Down==11)?true:na, style=shape.circle, text="11", textcolor=red, color=#88888800, location=location.belowbar, size=size.auto, editable=false)
+plotshape(group1 and (c1Down==12)?true:na, style=shape.circle, text="12", textcolor=red, color=#88888800, location=location.belowbar, size=size.auto, editable=false)
+plotshape(group1 and (c1Down==13)?true:na, style=shape.circle, text="13", textcolor=red, color=#FFBB00,   location=location.belowbar, size=size.auto, editable=false)
+//plotshape(group1 and (c1Down==14)?true:na, style=shape.circle, text="14", textcolor=red, color=#88888800, location=location.belowbar, size=size.auto, editable=false)
+plotshape(group1 and (c1Down==15)?true:na, style=shape.circle, text="15", textcolor=red, color=#88888800, location=location.belowbar, size=size.auto, editable=false)
+//plotshape(group1 and (c1Down==16)?true:na, style=shape.circle, text="16", textcolor=red, color=#88888800, location=location.belowbar, size=size.auto, editable=false)
+plotshape(group1 and (c1Down==17)?true:na, style=shape.circle, text="17", textcolor=red, color=#88888800, location=location.belowbar, size=size.auto, editable=false)
+//plotshape(group1 and (c1Down==18)?true:na, style=shape.circle, text="18", textcolor=red, color=#88888800, location=location.belowbar, size=size.auto, editable=false)
+plotshape(group1 and (c1Down==19)?true:na, style=shape.circle, text="19", textcolor=red, color=#88888800, location=location.belowbar, size=size.auto, editable=false)
+//plotshape(group1 and (c1Down==20)?true:na, style=shape.circle, text="20", textcolor=red, color=#88888800, location=location.belowbar, size=size.auto, editable=false)
+plotshape(group1 and (c1Down==21)?true:na, style=shape.circle, text="21", textcolor=red, color=#FFBB00,   location=location.belowbar, size=size.auto, editable=false)
+plotshape(group1 and (c1Down==34)?true:na, style=shape.circle, text="34", textcolor=red, color=#FFBB00,   location=location.belowbar, size=size.auto, editable=false)
+plotshape(group1 and (c1Down==55)?true:na, style=shape.circle, text="55", textcolor=red, color=#FFBB00,   location=location.belowbar, size=size.auto, editable=false)
+plotshape((group1 and (c1Down>13)and(c1Down!=15)and(c1Down!=17)and(c1Down!=19)and(c1Down!=21)and(c1Down!=34)and(c1Down!=55))?true:na, title="Group 1 Generic Count Down", 
+                             style=shape.circle, text="+",  textcolor=red, color=#88888800, location=location.belowbar, size=size.auto)
+plotshape(((Group1ShowBars)and(plotC1DownMask>0))?plotC1DownMask:na, title="Group 1 Bars, Cnt Down", 
+                             style=shape.circle, text="-",  textcolor=gray,color=#88888800, location=location.absolute, size=size.auto, offset=1-Group1Bars)
+
+
+plotshape(group2 and (c2Up==1) ?true:na, style=shape.circle, text="1",  textcolor=green, color=#88888800, location=location.top, size=size.auto, editable=false)
+plotshape(group2 and (c2Up==2) ?true:na, style=shape.circle, text="2",  textcolor=green, color=#88888800, location=location.top, size=size.auto, editable=false)
+plotshape(group2 and (c2Up==3) ?true:na, style=shape.circle, text="3",  textcolor=green, color=#88888800, location=location.top, size=size.auto, editable=false)
+plotshape(group2 and (c2Up==4) ?true:na, style=shape.circle, text="4",  textcolor=green, color=#88888800, location=location.top, size=size.auto, editable=false)
+plotshape(group2 and (c2Up==5) ?true:na, style=shape.circle, text="5",  textcolor=green, color=#00FF00,   location=location.top, size=size.auto, editable=false)
+//plotshape(group2 and (c2Up==6) ?true:na, style=shape.circle, text="6",  textcolor=green, color=#88888800, location=location.top, size=size.auto, editable=false)
+//plotshape(group2 and (c2Up==7) ?true:na, style=shape.circle, text="7",  textcolor=green, color=#88888800, location=location.top, size=size.auto, editable=false)
+plotshape(group2 and (c2Up==8) ?true:na, style=shape.circle, text="8",  textcolor=green, color=#00FF00,   location=location.top, size=size.auto, editable=false)
+plotshape(group2 and (c2Up==13)?true:na, style=shape.circle, text="13", textcolor=green, color=#00FF00,   location=location.top, size=size.auto, editable=false)
+plotshape(group2 and (c2Up==21)?true:na, style=shape.circle, text="21", textcolor=green, color=#00FF00,   location=location.top, size=size.auto, editable=false)
+plotshape((group2 and (c2Up>5)and(c2Up!=8)and(c2Up!=13)and(c2Up!=21))?true:na, title="Group 2 Generic Count Up", 
+                           style=shape.circle, text="*",  textcolor=green, color=#88888800, location=location.top, size=size.auto)
+plotshape(((Group2ShowBars)and(not group2)and(plotC2UpMask))?true:na, title="Group 2 Bars, Cnt Up", 
+                           style=shape.circle, text="-",  textcolor=gray, color=#88888800, location=location.top, size=size.auto, offset=-Group2Bars)
+
+plotshape(group2 and (c2Down==1) ?true:na, style=shape.circle, text="1",  textcolor=red, color=#88888800, location=location.bottom, size=size.auto, editable=false)
+plotshape(group2 and (c2Down==2) ?true:na, style=shape.circle, text="2",  textcolor=red, color=#88888800, location=location.bottom, size=size.auto, editable=false)
+plotshape(group2 and (c2Down==3) ?true:na, style=shape.circle, text="3",  textcolor=red, color=#88888800, location=location.bottom, size=size.auto, editable=false)
+plotshape(group2 and (c2Down==4) ?true:na, style=shape.circle, text="4",  textcolor=red, color=#88888800, location=location.bottom, size=size.auto, editable=false)
+plotshape(group2 and (c2Down==5) ?true:na, style=shape.circle, text="5",  textcolor=red, color=#FFBB00,   location=location.bottom, size=size.auto, editable=false)
+//plotshape(group2 and (c2Down==6) ?true:na, style=shape.circle, text="6",  textcolor=red, color=#88888800, location=location.bottom, size=size.auto, editable=false)
+//plotshape(group2 and (c2Down==7) ?true:na, style=shape.circle, text="7",  textcolor=red, color=#88888800, location=location.bottom, size=size.auto, editable=false)
+plotshape(group2 and (c2Down==8) ?true:na, style=shape.circle, text="8",  textcolor=red, color=#FFBB00,   location=location.bottom, size=size.auto, editable=false)
+plotshape(group2 and (c2Down==13)?true:na, style=shape.circle, text="13", textcolor=red, color=#FFBB00,   location=location.bottom, size=size.auto, editable=false)
+plotshape(group2 and (c2Down==21)?true:na, style=shape.circle, text="21", textcolor=red, color=#FFBB00,   location=location.bottom, size=size.auto, editable=false)
+plotshape((group2 and (c2Down>5)and(c2Down!=8)and(c2Down!=13)and(c2Down!=21))?true:na, title="Group 2 Generic Count Down", 
+                           style=shape.circle, text="*",  textcolor=red, color=#88888800, location=location.bottom, size=size.auto)
+plotshape(((Group2ShowBars)and(not group2)and(plotC2DownMask))?true:na, title="Group 2 Bars, Cnt Down", 
+                           style=shape.circle, text="-",  textcolor=gray, color=#88888800, location=location.bottom, size=size.auto, offset=-Group2Bars)
+

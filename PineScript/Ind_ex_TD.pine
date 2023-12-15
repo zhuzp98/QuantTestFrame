@@ -1,0 +1,44 @@
+// Description: This script implements the TD Sequential indicator in Pine Script.
+// TD Sequential is a technical analysis indicator developed by Tom DeMark. It is used
+// to identify potential trend reversals and exhaustion points in the market.
+
+//@version=4
+study(title="TD Sequential", shorttitle="TD Seq", overlay=false)
+
+// The 'td_seq' function calculates the TD Sequential value for each bar.
+//
+// PARAMETERS:
+// none
+//
+// RETURNS:
+// A series with the TD Sequential values.
+td_seq() =>
+    // Initialize variables
+    var int count = 0
+    var int td = 0
+
+    // Calculate TD Sequential value for each bar
+    for i = 1 to bar_index
+        // Check if current bar is a setup bar
+        if low[i] < low[i-1] and high[i] > high[i-1]
+            count := 1
+        // Check if current bar is a continuation bar
+        else if low[i] > low[i-1] and high[i] < high[i-1]
+            count := count + 1
+        // Check if current bar is a reversal bar
+        else if low[i] < low[i-1] and high[i] < high[i-1]
+            count := 0
+            td := count
+        // Check if current bar is a completed setup bar
+        else if low[i] > low[i-1] and high[i] > high[i-1]
+            count := 0
+            td := -count
+
+    // Return TD Sequential values
+    td
+
+// Calculate TD Sequential values
+tdSeqValues = td_seq()
+
+// Plot TD Sequential values
+plot(tdSeqValues, color=color.blue, title="TD Sequential")
