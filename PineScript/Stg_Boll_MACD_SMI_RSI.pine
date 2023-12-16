@@ -39,6 +39,8 @@ rsiSource       = input.source(hlc3, "RSI Source", group="RSI Settings")
 rsiMALength     = input.int(14, title="RSI MA Length", group="RSI Settings")
 rsiBollMult     = input.float(2.0, minval=0.001, maxval=50, title="RSI BB StdDev", group="RSI Settings")
 
+// === Input D TD ===
+
 // ##################
 // === Indicators ===
 // ##################

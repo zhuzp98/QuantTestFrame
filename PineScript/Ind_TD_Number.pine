@@ -42,7 +42,5 @@ tdCountdown(setupCount, setupDirection) =>
 countdown = tdCountdown(setup, direction)
 
 // Plotting
-plotshape(series=setup == 9, location=location.abovebar, color=color.green, style=shape.labelup, text="TD9 Up")
-plotshape(series=setup == -9, location=location.belowbar, color=color.red, style=shape.labeldown, text="TD9 Down")
-plotshape(series=countdown == 13 and direction > 0, location=location.abovebar, color=color.blue, style=shape.xcross, text="TD13 Up")
-plotshape(series=countdown == 13 and direction < 0, location=location.belowbar, color=color.purple, style=shape.xcross, text="TD13 Down")
+
+plot(setup, title = "TD Setup", style = plot.style_columns, color = (setup >= 0 ? (setup[1] < setup ? #26A69A : #B2DFDB) : (setup[1] < setup ? #FFCDD2 : #FF5252)))
