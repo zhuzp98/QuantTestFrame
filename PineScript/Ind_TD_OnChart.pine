@@ -2,7 +2,7 @@
 // © rhapsodyz
 
 //@version=5
-indicator("TD Sequential 9/13", shorttitle="TD Seq", overlay=true)
+indicator("TD Sequential OnChart", shorttitle="TD", overlay=true)
 
 // Function to calculate TD Setup
 tdSetup() =>
@@ -42,7 +42,7 @@ tdCountdown(setupCount, setupDirection) =>
 countdown = tdCountdown(setup, direction)
 
 // Plotting
-plotshape(series=setup == 9, location=location.abovebar, color=color.green, style=shape.labelup, text="TD9 Up")
-plotshape(series=setup == -9, location=location.belowbar, color=color.red, style=shape.labeldown, text="TD9 Down")
-plotshape(series=countdown == 13 and direction > 0, location=location.abovebar, color=color.blue, style=shape.xcross, text="TD13 Up")
-plotshape(series=countdown == 13 and direction < 0, location=location.belowbar, color=color.purple, style=shape.xcross, text="TD13 Down")
+plotshape(series=setup == 9, location=location.abovebar, color=color.green, style=shape.labelup, text="9U")
+plotshape(series=setup == -9, location=location.belowbar, color=color.red, style=shape.labeldown, text="9D")
+plotshape(series=countdown == 13 and direction > 0, location=location.abovebar, color=color.blue, style=shape.labelup, text="13U")
+plotshape(series=countdown == 13 and direction < 0, location=location.belowbar, color=color.purple, style=shape.labelup, text="13D")

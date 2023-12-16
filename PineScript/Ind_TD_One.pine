@@ -2,54 +2,47 @@
 // © rhapsodyz
 
 //@version=5
-indicator("TD Sequential Indicator", overlay=true)
+indicator("TD Sequential 9/13", shorttitle="TD", overlay=true)
 
-// Define the TD Setup conditions
-td_setup_up = close > close[4]
-td_setup_dn = close < close[4]
+// Function to calculate TD Setup
+tdSetup() =>
+    var int setupCount = 0
+    var int setupDirection = 0
+    if close > close[4]
+        if setupDirection != 1
+            setupCount := 1
+            setupDirection := 1
+        else
+            setupCount += 1
+    else if close < close[4]
+        if setupDirection != -1
+            setupCount := -1
+            setupDirection := -1
+        else
+            setupCount -= 1
+    else
+        setupCount := 0
+    [setupCount, setupDirection]
 
-// Initialize the TD Setup counts
-var int td_setup_up_count = na
-var int td_setup_dn_count = na
+// Function to calculate TD Countdown
+tdCountdown(setupCount, setupDirection) =>
+    var int countdown = 0
+    if math.abs(setupCount) == 9
+        for i = 1 to 13
+            if setupDirection > 0 and low < low[2]
+                countdown += 1
+            else if setupDirection < 0 and high > high[2]
+                countdown += 1
+            if countdown >= 13
+                break
+    countdown
 
-// Update the TD Setup counts
-if td_setup_up
-    td_setup_up_count := nz(td_setup_up_count[1]) + 1
-    td_setup_dn_count := na
-else
-    td_setup_up_count := na
+// Calculating TD Setup and TD Countdown
+[setup, direction] = tdSetup()
+countdown = tdCountdown(setup, direction)
 
-if td_setup_dn
-    td_setup_dn_count := nz(td_setup_dn_count[1]) + 1
-    td_setup_up_count := na
-else
-    td_setup_dn_count := na
-
-// Plot the TD Setup counts
-plotchar(td_setup_up_count, "TD Setup Up", "", location.abovebar, color.green, size = size.tiny)
-plotchar(td_setup_dn_count, "TD Setup Dn", "", location.belowbar, color.red, size = size.tiny)
-
-// Define the TD Countdown conditions
-td_countdown_up = td_setup_up_count[1] == 9 and close > ta.valuewhen(td_setup_up, high, 2)[1]
-td_countdown_dn = td_setup_dn_count[1] == 9 and close < ta.valuewhen(td_setup_dn, low, 2)[1]
-
-// Initialize the TD Countdown counts
-var int td_countdown_up_count = na
-var int td_countdown_dn_count = na
-
-// Update the TD Countdown counts
-if td_countdown_up
-    td_countdown_up_count := nz(td_countdown_up_count[1]) + 1
-    td_countdown_dn_count := na
-else
-    td_countdown_up_count := na
-
-if td_countdown_dn
-    td_countdown_dn_count := nz(td_countdown_dn_count[1]) + 1
-    td_countdown_up_count := na
-else
-    td_countdown_dn_count := na
-
-// Plot the TD Countdown counts
-plotchar(td_countdown_up_count, "TD Countdown Up", "9", location.abovebar, color.lime, size = size.small)
-plotchar(td_countdown_dn_count, "TD Countdown Dn", "9", location.belowbar, color.maroon, size = size.small)
+// Plotting
+plotshape(series=setup == 9, location=location.abovebar, color=color.green, style=shape.labelup, text="9U")
+plotshape(series=setup == -9, location=location.belowbar, color=color.red, style=shape.labeldown, text="9D")
+plotshape(series=countdown == 13 and direction > 0, location=location.abovebar, color=color.blue, style=shape.labelup, text="13U")
+plotshape(series=countdown == 13 and direction < 0, location=location.belowbar, color=color.purple, style=shape.labelup, text="13D")

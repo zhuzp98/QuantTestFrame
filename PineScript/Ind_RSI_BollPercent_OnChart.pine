@@ -8,7 +8,10 @@ rsiLength       = input.int(14, minval=1, title="RSI Length", group="RSI Setting
 rsiSource       = input.source(hlc3, "RSI Source", group="RSI Settings")
 rsiMALength     = input.int(14, title="MA Length", group="Boll Settings")
 rsiBollMult     = input.float(2.0, minval=0.001, maxval=50, title="Boll StdDev", group="Boll Settings")
-showDivergence  = input.bool(false, title="Show Divergence", group="RSI Settings")
+showBreakout    = input.bool(true, title="Show Breakout", group="RSI Settings")
+rsiDivBreakLow  = input.float(1.0, minval=0.001, maxval=3, title="Breakout Value Low", group="RSI Settings")
+rsiDivBreakHigh = input.float(1.3, minval=0.001, maxval=3, title="Breakout Value High", group="RSI Settings")
+rsiRawBreak     = input.int(25, minval = 1, title = "RSI Raw Breakout Value", group = "RSI Settings")
 
 up = ta.rma(math.max(ta.change(rsiSource), 0), rsiLength)
 down = ta.rma(-math.min(ta.change(rsiSource), 0), rsiLength)
@@ -20,10 +23,10 @@ rsiDiv = (rsi - rsiMA) / (ta.stdev(rsi, rsiMALength) * rsiBollMult)
 break_up = false
 break_down = false
 
-if rsiDiv[1] < -1 and rsi[1] <= -20
+if rsiDiv <= -rsiDivBreakLow and rsiDiv >= -rsiDivBreakHigh and rsi <= -rsiRawBreak and showBreakout
     break_down := true
 
-if rsiDiv[1] > 1 and rsi[1] >= 20
+if rsiDiv >= rsiDivBreakLow and rsiDiv <= rsiDivBreakHigh and rsi >= rsiRawBreak and showBreakout
     break_up := true
 
 plotchar(break_up, 'RSI Bought Breakout', '▼', location.abovebar, #f23645)
