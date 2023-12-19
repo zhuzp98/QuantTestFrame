@@ -68,6 +68,17 @@ rsiDivBreakLow  = input.float(1.0, minval=0.001, maxval=3, title="Breakout Value
 rsiDivBreakHigh = input.float(1.3, minval=0.001, maxval=3, title="Breakout Value High", group="RSI Settings")
 rsiRawBreak     = input.int(25, minval = 1, title = "RSI Raw Breakout Value", group = "RSI Settings")
 
+// === Input C MACD ===
+macdFastLength      = input(12, title="Fast Length", group="MACD Settings")
+macdSlowLength      = input(26, title="Slow Length", group="MACD Settings")
+macdSignalLength    = input(9, title="Signal Length", group="MACD Settings")
+
+// === Input D SMI ===
+smiLengthK     = input.int(10, "%K Length",  minval = 1, maxval = 150)
+smiLengthD     = input.int(3,  "%D Length",  minval = 1, maxval = 50)
+smiLengthEMA   = input.int(8,  "EMA Length", minval = 1, maxval = 50)
+smiOversold    = - 40
+smiOverbought  =   40
 
 // ##################
 // === Indicators ===
@@ -75,6 +86,9 @@ rsiRawBreak     = input.int(25, minval = 1, title = "RSI Raw Breakout Value", gr
 
 // === Indicator A TD Sequential ===
 [setup, direction] = tdSetup()
+td9_down = setup == 9
+td9_up = setup == -9
+tdSignal = td9_down or td9_up
 
 // === Indicator B RSI ===
 up          = ta.rma(math.max(ta.change(rsiSource), 0), rsiLength)
@@ -82,26 +96,65 @@ down        = ta.rma(-math.min(ta.change(rsiSource), 0), rsiLength)
 rsi         = down == 0 ? 50 : up == 0 ? -50 : 50 - (100 / (1 + up / down))
 rsiMA       = ta.sma(rsi, rsiMALength)
 rsiDiv      = (rsi - rsiMA) / (ta.stdev(rsi, rsiMALength) * rsiBollMult)
-break_up    = false
-break_down  = false
+rsiBreak_up    = false
+rsiBreak_down  = false
 
 if rsiDiv <= -rsiDivBreakLow and rsiDiv >= -rsiDivBreakHigh and rsi <= -rsiRawBreak and showBreakout
-    break_down := true
+    rsiBreak_down := true
 
 if rsiDiv >= rsiDivBreakLow and rsiDiv <= rsiDivBreakHigh and rsi >= rsiRawBreak and showBreakout
-    break_up := true
+    rsiBreak_up := true
+
+rsiSignal = rsiBreak_down or rsiBreak_up
+
+// === Indicator C MACD ===
+[macdLine, signalLine, histLine] = ta.macd(close, fastLength, slowLength, signalLength)
+diffHist = histLine - histLine[1]
+
+macdCross_up = ta.crossover(macdLine, signalLine)
+macdCross_down = ta.crossunder(macdLine, signalLine)
+macdSignal = macdCross_down or macdCross_up
+
+// === Indicator D SMI ===
+highestHigh         = ta.highest(lengthK)
+lowestLow           = ta.lowest(lengthK)
+highestLowestRange  = highestHigh - lowestLow
+relativeRange       = close - (highestHigh + lowestLow) / 2
+smi                 = 200 * (emaEma(relativeRange, lengthD) / emaEma(highestLowestRange, lengthD))
+smiEMA              = ta.ema(smi, lengthEMA)
+smiDiff             = smi - smiEMA
+smiDiv              = smiDiff - smiDiff[1]
+
+smiBreak_up = ta.crossover(smi, smiEMA)
+smiBreak_down = ta.crossunder(smi, smiEMA)
+smiSignal = smiBreak_down or smiBreak_up
+
+// ##########################
+// === Observation Window ===
+// ##########################
+// Observation window
+var int observationWindow = 0
+
+if tdSignal
+    observationWindow := 8
+else if observationWindow > 0
+    observationWindow := observationWindow - 1
 
 // ##################
 // === Conditions ===
 // ##################
 
-// === Condition A TD ===
-tdLong  = setup == -9
-tdShort = setup == 9
+var bool LongEntry = false
+var bool ShortEntry = false
 
-// === Condition B RSI ===
-rsiLong  = break_down
-rsiShort = break_up
+if observationWindow > 0
+    if (macdCross_up or smiBreak_up or rsiBreak_up) and td9_up
+        LongEntry := true
+        observationWindow := 0
+    else if (macdCross_down or smiBreak_down or rsiBreak_down) and td9_down
+        ShortEntry := true
+        observationWindow := 0
+
 
 // #######################
 // === Risk Management ===
@@ -117,7 +170,7 @@ q3=input.int(title=" qty_percent3", defval=25, minval=1)
 
 
 // === Stop-loss ===
-stoploss = input.float(title="Stop Loss", defval = 15, minval = 0.01)
+stoploss = input.float(title="Stop Loss", defval = 0.02, minval = 0.01)
 los = per(stoploss)
 
 // === Take-profit ===
@@ -132,34 +185,17 @@ tp4=input.float(title=" Take profit4", defval=10, minval=0.01)
 // === Order Execution ===
 // #######################
 
-// === United Condition ===
-longSignal  = rsiLong
-shortSignal = tdShort or rsiShort
-longExit    = tdShort or rsiShort
-shortExit   = tdLong or rsiLong
-
-tdEntry = input.bool(true, title = "TD Entry")
-rsiEntry = input.bool(true, title = "RSI Entry")
-
 // === Execute long entry ===
-if longSignal 
-    strategy.entry("Long", strategy.long, qty = _qty)
+if LongEntry 
+    strategy.order(id = "Long", strategy.long, qty = _qty)
+    strategy.exit("LongStop", "Long", loss = los)
 
-if shortSignal 
-    strategy.entry("Short", strategy.short, qty = _qty)
+if ShortEntry 
+    strategy.order(id = "Short", strategy.short, qty = _qty)
+    strategy.exit("ShortStop", "Short", loss = los)
 
-if longExit
-    strategy.exit("LongExit", "Long", qty_percent = 100)
-else
-    strategy.exit("x1", qty_percent = q1, profit = per(tp1), loss = los)
-    strategy.exit("x2", qty_percent = q2, profit = per(tp2), loss = los)
-    strategy.exit("x3", qty_percent = q3, profit = per(tp3), loss = los)
-    strategy.exit("x4", profit = per(tp4), loss = los)
+if direction != direction[1]
+    strategy.order(id = "Long", strategy.short, qty_percent = 100)
 
-if ShortExit
-    strategy.exit("ShortExit", "Short", qty_percent = 100)
-else
-    strategy.exit("x1", qty_percent = q1, profit = per(tp1), loss = los)
-    strategy.exit("x2", qty_percent = q2, profit = per(tp2), loss = los)
-    strategy.exit("x3", qty_percent = q3, profit = per(tp3), loss = los)
-    strategy.exit("x4", profit = per(tp4), loss = los)
+if direction != direction[1]
+    strategy.order(id = "Short", strategy.long, qty_percent = 100)

@@ -8,12 +8,14 @@ indicator("TD Sequential Number", shorttitle="TD Num", overlay=false)
 tdSetup() =>
     var int setupCount = 0
     var int setupDirection = 0
+    // 当前价格比4格前的高
     if close > close[4]
         if setupDirection != 1
             setupCount := 1
             setupDirection := 1
         else
             setupCount += 1
+    // 当前价格比四格前的低
     else if close < close[4]
         if setupDirection != -1
             setupCount := -1
@@ -24,22 +26,8 @@ tdSetup() =>
         setupCount := 0
     [setupCount, setupDirection]
 
-// Function to calculate TD Countdown
-tdCountdown(setupCount, setupDirection) =>
-    var int countdown = 0
-    if math.abs(setupCount) == 9
-        for i = 1 to 13
-            if setupDirection > 0 and low < low[2]
-                countdown += 1
-            else if setupDirection < 0 and high > high[2]
-                countdown += 1
-            if countdown >= 13
-                break
-    countdown
-
-// Calculating TD Setup and TD Countdown
+// Calculating TD Setup
 [setup, direction] = tdSetup()
-countdown = tdCountdown(setup, direction)
 
 // Plotting
 tdUpperBand = hline(9, "TD Upper Band", color=#787B86)
