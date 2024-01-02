@@ -1,5 +1,8 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © rhapsodyz
+
 //@version=5
-indicator(title="MACD Hist Div", shorttitle="MACD_Div", timeframe="", timeframe_gaps=true)
+indicator(title="MACD Hist Divergence", shorttitle="MACD-Div", timeframe="", timeframe_gaps=true)
 // Getting inputs
 fast_length = input(title = "Fast Length", defval = 12)
 slow_length = input(title = "Slow Length", defval = 26)

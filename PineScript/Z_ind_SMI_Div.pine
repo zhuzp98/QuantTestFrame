@@ -2,7 +2,7 @@
 // © rhapsodyz
 
 //@version=5
-indicator("Stochastic Momentum Index with Diff", "SMI-D", timeframe = "", timeframe_gaps = true)
+indicator(title = "SMI Hist Divergence", shorttitle = "SMI-Div", timeframe = "", timeframe_gaps = true)
 
 lengthK   = input.int(10, "%K Length",  minval = 1, maxval = 15000)
 lengthD   = input.int(3,  "%D Length",  minval = 1, maxval = 4999)
@@ -17,10 +17,11 @@ relativeRange = close - (highestHigh + lowestLow) / 2
 smi = 200 * (emaEma(relativeRange, lengthD) / emaEma(highestLowestRange, lengthD))
 smiEMA = ta.ema(smi, lengthEMA)
 smiDiff = smi - smiEMA
+smiDiv = smiDiff - smiDiff[1]
 
 smiPlot = plot(smi, "SMI", color = color.blue)
 plot(smiEMA, "SMI-based EMA", color = color.orange)
-plot(smiDiff, title = "smiDiff", style = plot.style_columns, color = (smiDiff >= 0 ? (smiDiff[1] < smiDiff ? #26A69A : #B2DFDB) : (smiDiff[1] < smiDiff ? #FFCDD2 : #FF5252)))
+plot(smiDiv, title = "smiDiv", style = plot.style_columns, color = (smiDiv >= 0 ? (smiDiv[1] < smiDiv ? #26A69A : #B2DFDB) : (smiDiv[1] < smiDiv ? #FFCDD2 : #FF5252)))
 
 overbought = hline(40, "Overbought Line")
 oversold   = hline(-40, "Oversold Line")

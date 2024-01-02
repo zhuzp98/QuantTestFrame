@@ -1,0 +1,17 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © rhapsodyz
+
+//@version=5
+indicator(title="Historical Volatility", shorttitle="HV", format=format.price, precision=2, timeframe="", timeframe_gaps=true)
+length = input.int(10, minval=1)
+lengthEMA = input.int(200,  "EMA Length", minval = 1, maxval = 4999)
+
+annual = 365
+per = timeframe.isintraday or timeframe.isdaily and timeframe.multiplier == 1 ? 1 : 7
+hv = 100 * ta.stdev(math.log(close / close[1]), length) * math.sqrt(annual / per)
+hvEMA = ta.ema(hv, lengthEMA)
+hvDiff = hv - hvEMA
+
+hvPlot = plot(hv, "HV", color = color.blue)
+plot(hvEMA, "HV-based EMA", color = color.orange)
+plot(hvDiff, title = "hvDiff", style = plot.style_columns, color = (hvDiff >= 0 ? (hvDiff[1] < hvDiff ? #26A69A : #B2DFDB) : (hvDiff[1] < hvDiff ? #FFCDD2 : #FF5252)))

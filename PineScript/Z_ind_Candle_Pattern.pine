@@ -2,7 +2,7 @@
 // © rhapsodyz
 
 //@version=5
-indicator("*A Candlestick Patterns", shorttitle = "Candle Patterns", overlay=true)
+indicator(title = "Candlestick Patterns", shorttitle = "Candle Patterns", overlay=true)
 
 C_DownTrend = true
 C_UpTrend = true
@@ -26,7 +26,7 @@ if trendRule == trendRule2
 	C_DownTrend := close < smaFast and smaFast < smaSlow
 	C_UpTrend := close > smaFast and smaFast > smaSlow
 
-C_Len = input.int(14, title = "EMA Depth for BodyAvg") // ta.ema depth for bodyAvg
+C_Len = 14 // ta.ema depth for bodyAvg
 C_ShadowPercent = 5.0 // size of shadows
 C_ShadowEqualsPercent = 100.0
 C_DojiBodyPercent = 5.0
