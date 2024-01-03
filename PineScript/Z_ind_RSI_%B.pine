@@ -1,29 +1,60 @@
-// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// This work is licensed under a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) https://creativecommons.org/licenses/by-nc-sa/4.0/
 // © rhapsodyz
 
 //@version=5
-indicator(title="RSI with Boll %B", shorttitle="RSI %B", format=format.price, precision=2, timeframe="", timeframe_gaps=true)
+indicator(title="RSI with Boll %B", 
+     shorttitle="RSI %B", 
+     precision=2, 
+     timeframe="", 
+     timeframe_gaps=true)
+
+// ##################
+// === Parameters ===
+// ##################
 
 rsiLength       = input.int(6, minval=1, title="RSI Length", group="RSI Settings")
 rsiSource       = input.source(hlc3, "RSI Source", group="RSI Settings")
 rsiMALength     = input.int(14, title="MA Length", group="Boll Settings")
 rsiBollMult     = input.float(2.0, minval=0.001, maxval=50, title="Boll StdDev", group="Boll Settings")
-showDivergence  = input.bool(false, title="Show Divergence", group="RSI Settings")
+showBreakout    = input.bool(true, title="Show Breakout", group="RSI Settings")
+rsiDivBreakLow  = input.float(0.9, minval=0.001, maxval=3, title="Breakout Value Low", group="RSI Settings")
+rsiDivBreakHigh = input.float(1.4, minval=0.001, maxval=3, title="Breakout Value High", group="RSI Settings")
+rsiRawBreak     = input.int(25, minval = 1, title = "RSI Raw Breakout Value", group = "RSI Settings")
+// ##################
+// === Indicators ===
+// ##################
 
-up = ta.rma(math.max(ta.change(rsiSource), 0), rsiLength)
-down = ta.rma(-math.min(ta.change(rsiSource), 0), rsiLength)
-rsi = down == 0 ? 50 : up == 0 ? -50 : 50 - (100 / (1 + up / down))
-rsiMA = ta.sma(rsi, rsiMALength)
+up      = ta.rma(math.max(ta.change(rsiSource), 0), rsiLength)
+down    = ta.rma(-math.min(ta.change(rsiSource), 0), rsiLength)
+rsi     = down == 0 ? 50 : up == 0 ? -50 : 50 - (100 / (1 + up / down))
+rsiMA   = ta.ema(rsi, rsiMALength)
+rsiDiv  = (rsi - rsiMA) / (ta.stdev(rsi, rsiMALength) * rsiBollMult)
 
-rsiDiv = (rsi - rsiMA) / (ta.stdev(rsi, rsiMALength) * rsiBollMult)
+// ##############
+// === Alerts ===
+// ##############
 
+break_up    = false
+break_down  = false
 
-rsiDivPlot = plot(rsiDiv, "RSI Boll %B", color=#26A69A)
-band1 = hline(0.8, "Overbought", color=#787B86, linestyle=hline.style_dashed)
-hline(0, "Middle Band", color=color.new(#787B86, 50))
-band0 = hline(-0.8, "Oversold", color=#787B86, linestyle=hline.style_dashed)
-fill(band1, band0, color=color.rgb(38, 166, 154, 90), title="Background")
+if rsiDiv <= -rsiDivBreakLow and rsiDiv >= -rsiDivBreakHigh and rsi <= -rsiRawBreak and showBreakout
+    break_up    := true
+if rsiDiv >= rsiDivBreakLow and rsiDiv <= rsiDivBreakHigh and rsi >= rsiRawBreak and showBreakout
+    break_down  := true
 
+alertcondition(break_up, title = "RSI Oversold", message = "New RSI oversold, check rebounce")
+alertcondition(break_down, title = "RSI Overbought", message = "New RSI overbought, check retreat")
+
+// #############
+// === Plots ===
+// #############
+
+rsiDivPlot  = plot(rsiDiv, "RSI Boll %B", color=#26A69A)
+band1       = hline(0.8, "Overbought", color=#787B86, linestyle=hline.style_dashed)
+bandMid     = hline(0, "Middle Band", color=color.new(#787B86, 50))
+band0       = hline(-0.8, "Oversold", color=#787B86, linestyle=hline.style_dashed)
 midLinePlot = plot(0, color = na, editable = false, display = display.none)
-fill(rsiDivPlot, midLinePlot, 1.2, 0.8, top_color = color.new(color.green, 0), bottom_color = color.new(color.green, 100),  title = "Overbought Gradient Fill")
-fill(rsiDivPlot, midLinePlot, -0.8,  -1.2,  top_color = color.new(color.red, 100), bottom_color = color.new(color.red, 0),      title = "Oversold Gradient Fill")
+
+fill(band1, band0, color=color.rgb(38, 166, 154, 90), title = "Background")
+fill(rsiDivPlot, midLinePlot, 1.2, 0.8, top_color = color.new(color.green, 0), bottom_color = color.new(color.green, 100), title = "Overbought Gradient Fill")
+fill(rsiDivPlot, midLinePlot, -0.8,  -1.2,  top_color = color.new(color.red, 100), bottom_color = color.new(color.red, 0), title = "Oversold Gradient Fill")

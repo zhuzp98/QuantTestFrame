@@ -1,4 +1,4 @@
-// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// This work is licensed under a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) https://creativecommons.org/licenses/by-nc-sa/4.0/
 // © rhapsodyz
 
 //@version=5
@@ -32,6 +32,20 @@ dev     = mult * ta.stdev(src, length)
 upper   = basis + dev
 lower   = basis - dev
 bbr     = (src - lower)/(upper - lower)
+
+// ##############
+// === Alerts ===
+// ##############
+
+downToBasis = ta.crossunder(src, basis)
+upToBasis   = ta.crossover(src, basis)
+hitUpper    = ta.crossover(src, upper)
+hitLower    = ta.crossunder(src, lower)
+
+alertcondition(downToBasis, title = "Drop to Boll Basis", message = "Drop to Boll basis, check rebounce")
+alertcondition(upToBasis, title = "Hike to Boll Basis", message = "Hike to Boll basis, check retreat")
+alertcondition(hitUpper, title = "Hike to Boll Upper", message = "Hike to Boll upper, check retreat")
+alertcondition(hitLower, title = "Drop to Boll Lower", message = "Drop to Boll lower, check rebounce")
 
 // #############
 // === Plots ===

@@ -1,8 +1,17 @@
-// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// This work is licensed under a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) https://creativecommons.org/licenses/by-nc-sa/4.0/
 // © rhapsodyz
 
 //@version=5
-indicator(title="RSI %B on Chart", shorttitle="RSI %B", overlay=true, format=format.price, precision=2, timeframe="", timeframe_gaps=true)
+indicator(title     = "RSI %B on Chart", 
+     shorttitle     = "RSI %B", 
+     overlay        = true, 
+     precision      = 2, 
+     timeframe      = "", 
+     timeframe_gaps = true)
+
+// ##################
+// === Parameters ===
+// ##################
 
 rsiLength       = input.int(6, minval=1, title="RSI Length", group="RSI Settings")
 rsiSource       = input.source(hlc3, "RSI Source", group="RSI Settings")
@@ -13,23 +22,37 @@ rsiDivBreakLow  = input.float(0.9, minval=0.001, maxval=3, title="Breakout Value
 rsiDivBreakHigh = input.float(1.4, minval=0.001, maxval=3, title="Breakout Value High", group="RSI Settings")
 rsiRawBreak     = input.int(25, minval = 1, title = "RSI Raw Breakout Value", group = "RSI Settings")
 
-up = ta.rma(math.max(ta.change(rsiSource), 0), rsiLength)
-down = ta.rma(-math.min(ta.change(rsiSource), 0), rsiLength)
-rsi = down == 0 ? 50 : up == 0 ? -50 : 50 - (100 / (1 + up / down))
-rsiMA = ta.sma(rsi, rsiMALength)
+// ##################
+// === Indicators ===
+// ##################
 
-rsiDiv = (rsi - rsiMA) / (ta.stdev(rsi, rsiMALength) * rsiBollMult)
+up      = ta.rma(math.max(ta.change(rsiSource), 0), rsiLength)
+down    = ta.rma(-math.min(ta.change(rsiSource), 0), rsiLength)
+rsi     = down == 0 ? 50 : up == 0 ? -50 : 50 - (100 / (1 + up / down))
+rsiMA   = ta.ema(rsi, rsiMALength)
+rsiDiv  = (rsi - rsiMA) / (ta.stdev(rsi, rsiMALength) * rsiBollMult)
 
-break_up = false
-break_down = false
+// ##############
+// === Alerts ===
+// ##############
+
+break_up    = false
+break_down  = false
 
 if rsiDiv <= -rsiDivBreakLow and rsiDiv >= -rsiDivBreakHigh and rsi <= -rsiRawBreak and showBreakout
-    break_down := true
-
+    break_up    := true
 if rsiDiv >= rsiDivBreakLow and rsiDiv <= rsiDivBreakHigh and rsi >= rsiRawBreak and showBreakout
-    break_up := true
+    break_down  := true
 
-rsiPlot = plot(rsi, color = na, editable = false, display = display.status_line)
-rsiDivPlot = plot(rsiDiv, color = color.orange, editable = false, display = display.status_line)
-plotshape(series = break_up, title = 'RSI Bought Breakout', style = shape.triangledown, location = location.abovebar, color = #f23645, display = display.pane)
-plotshape(series = break_down, title = 'RSI Sold Breakout', style = shape.triangleup, location = location.belowbar, color = #089981, display = display.pane)
+alertcondition(break_up, title = "RSI Oversold", message = "New RSI oversold, check rebounce")
+alertcondition(break_down, title = "RSI Overbought", message = "New RSI overbought, check retreat")
+
+// #############
+// === Plots ===
+// #############
+
+rsiPlot     = plot(rsi, color = na, editable = false, display = display.status_line)
+rsiDivPlot  = plot(rsiDiv, color = color.orange, editable = false, display = display.status_line)
+
+plotshape(series = break_down, title = 'RSI Bought Breakout', style = shape.triangledown, location = location.abovebar, color = #f23645, display = display.pane)
+plotshape(series = break_up, title = 'RSI Sold Breakout', style = shape.triangleup, location = location.belowbar, color = #089981, display = display.pane)
