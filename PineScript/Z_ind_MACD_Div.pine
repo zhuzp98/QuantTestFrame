@@ -28,9 +28,6 @@ slow_ma = ma_source == "EMA" ? ta.ema(src, slow_length) : ta.sma(src, slow_lengt
 macd    = fast_ma - slow_ma
 signal  = ma_signal == "EMA" ? ta.ema(macd, signal_length) : ta.sma(macd, signal_length)
 hist    = macd - signal
-
-histR2F = hist[1] >= 0 and hist < 0
-histF2R = hist[1] <= 0 and hist > 0
 histDiv = (hist - hist[1]) * 5
 
 // ##############
@@ -48,6 +45,6 @@ alertcondition(deadCross, title = "MACD DeadCross", message = "MACD Dead Cross, 
 // #############
 
 hline(0, "Zero Line", color = color.new(#787B86, 50))
-plot(histDiv, title = "HistDiv", style = plot.style_columns, color = (histDiv >= 0 ? (histDiv[1] < histDiv ? #26A69A : #B2DFDB) : (histDiv[1] < histDiv ? #FFCDD2 : #FF5252)))
-plot(macd,   title = "MACD",   color = #2962FF)
-plot(signal, title = "Signal", color = #FF6D00)
+histDivPlot = plot(histDiv, title = "HistDiv", style = plot.style_columns, color = (histDiv >= 0 ? (histDiv[1] < histDiv ? #26A69A : #B2DFDB) : (histDiv[1] < histDiv ? #FFCDD2 : #FF5252)))
+macdPlot    = plot(macd,   title = "MACD",   color = #2962FF)
+signalPlot  = plot(signal, title = "Signal", color = #FF6D00)
