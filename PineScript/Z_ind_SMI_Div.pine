@@ -37,6 +37,9 @@ smiDiv              = smiDiff - smiDiff[1]
 goldCross = ta.crossover(smi, smiEMA) and smi < oversold
 deadCross = ta.crossunder(smi, smiEMA) and smi > overbought
 
+alertcondition(goldCross, title = "SMI Gold Cross", message = "SMI Gold Cross, seek hiking")
+alertcondition(goldCross, title = "SMI Dead Cross", message = "SMI Dead Cross, seek droping")
+
 // #############
 // === Plots ===
 // #############

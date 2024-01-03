@@ -4,7 +4,10 @@
 //@version=5
 indicator("TD Sequential OnChart", shorttitle="TD", overlay=true)
 
-// Function to calculate TD Setup
+// ##################
+// === Indicators ===
+// ##################
+
 tdSetup() =>
     var int setupCount = 0
     var int setupDirection = 0
@@ -24,12 +27,28 @@ tdSetup() =>
         setupCount := 0
     [setupCount, setupDirection]
 
-// Calculating TD Setup and TD Countdown
 [setup, direction] = tdSetup()
 
-// Plotting
+// ##############
+// === Alerts ===
+// ##############
+
+td9_down    = setup == 9
+td9_up      = setup == -9
+td13_down   = setup == 13
+td13_up     = setup == -13
+
+alertcondition(td9_down,  title = "TD9 Down",  message = "New TD9 Down, seek retreat")
+alertcondition(td9_up,    title = "TD9 Up",    message = "New TD9 Up, seek rebounce")
+alertcondition(td13_down, title = "TD13 Down", message = "New TD13 Down, seek retreat")
+alertcondition(td13_up,   title = "TD13 Up",   message = "New TD13 Down, seek rebounce")
+
+// #############
+// === Plots ===
+// #############
+
 tdPlot = plot(setup, color = na, editable = false, display = display.status_line)
-plotshape(series=setup == 9, title = "TD9跌", location=location.abovebar, color=color.rgb(241, 222, 15), style=shape.labeldown, text="9▼", textcolor = color.black, display = display.pane)
-plotshape(series=setup == -9, title = "TD9涨", location=location.belowbar, color=color.rgb(145, 222, 106), style=shape.labelup, text="9▲", textcolor = color.black, display = display.pane)
-plotshape(series=setup == 13, title = "TD13跌", location=location.abovebar, color=color.rgb(237, 65, 43), style=shape.labeldown, text="13▼", textcolor = color.black, display = display.pane)
-plotshape(series=setup == -13, title = "TD13涨", location=location.belowbar, color=color.rgb(28, 201, 51), style=shape.labelup, text="13▲", textcolor = color.black, display = display.pane)
+plotshape(series = setup == 9,   title = "TD9跌",  location=location.abovebar, color=color.rgb(241, 222, 15),  style=shape.labeldown, text="9▼",  textcolor = color.black, display = display.pane)
+plotshape(series = setup == -9,  title = "TD9涨",  location=location.belowbar, color=color.rgb(145, 222, 106), style=shape.labelup,   text="9▲",  textcolor = color.black, display = display.pane)
+plotshape(series = setup == 13,  title = "TD13跌", location=location.abovebar, color=color.rgb(237, 65, 43),   style=shape.labeldown, text="13▼", textcolor = color.black, display = display.pane)
+plotshape(series = setup == -13, title = "TD13涨", location=location.belowbar, color=color.rgb(28, 201, 51),   style=shape.labelup,   text="13▲", textcolor = color.black, display = display.pane)

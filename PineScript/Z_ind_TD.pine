@@ -2,9 +2,16 @@
 // © rhapsodyz
 
 //@version=5
-indicator("TD Sequential Number", shorttitle="TD Num", overlay=false)
+indicator(title     = "TD Sequential Number", 
+     shorttitle     = "TD", 
+     overlay        = false, 
+     timeframe      = timeframe.period, 
+     timeframe_gaps = true)
 
-// Function to calculate TD Setup
+// ##################
+// === Indicators ===
+// ##################
+
 tdSetup() =>
     var int setupCount = 0
     var int setupDirection = 0
@@ -24,13 +31,29 @@ tdSetup() =>
         setupCount := 0
     [setupCount, setupDirection]
 
-// Calculating TD Setup and TD Countdown
 [setup, direction] = tdSetup()
 
-// Plotting
+// ##############
+// === Alerts ===
+// ##############
+
+td9_down    = setup == 9
+td9_up      = setup == -9
+td13_down   = setup == 13
+td13_up     = setup == -13
+
+alertcondition(td9_down, title = "TD9 Down", message = "New TD9 Down, seek retreat")
+alertcondition(td9_up, title = "TD9 Up", message = "New TD9 Up, seek rebounce")
+alertcondition(td13_down, title = "TD13 Down", message = "New TD13 Down, seek retreat")
+alertcondition(td13_up, title = "TD13 Up", message = "New TD13 Down, seek rebounce")
+
+// #############
+// === Plots ===
+// #############
+
 tdUpperBand = hline(9, "TD Upper Band", color=#787B86)
 midLinePlot = plot(0, color = na, editable = false, display = display.none)
 tdLowerBand = hline(-9, "TD Lower Band", color=#787B86)
-tdPlot = plot(setup, title = "TD Setup", style = plot.style_columns, color = (setup > 0 ? (setup > 8 ? #26A69A : #B2DFDB) : (setup < -8 ? #FF5252 : #FFCDD2)))
+tdPlot      = plot(setup, title = "TD Setup", style = plot.style_columns, color = (setup > 0 ? (setup > 8 ? #26A69A : #B2DFDB) : (setup < -8 ? #FF5252 : #FFCDD2)))
 fill(tdPlot, midLinePlot, 18, 9, top_color = color.new(color.green, 0), bottom_color = color.new(color.green, 100),  title = "Overbought Gradient Fill")
 fill(tdPlot, midLinePlot, -9,  -18,  top_color = color.new(color.red, 100), bottom_color = color.new(color.red, 0),      title = "Oversold Gradient Fill")
