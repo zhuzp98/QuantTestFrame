@@ -2,7 +2,9 @@
 // © rhapsodyz
 
 //@version=5
-indicator("TD Sequential OnChart", shorttitle="TD", overlay=true)
+indicator(title = "TD Sequential OnChart", 
+     shorttitle = "TD", 
+     overlay    = true)
 
 // ##################
 // === Indicators ===

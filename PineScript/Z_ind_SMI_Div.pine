@@ -34,6 +34,8 @@ smiDiv              = smiDiff - smiDiff[1]
 // === Alerts ===
 // ##############
 
+oversold    = -40
+overbought  = 40
 goldCross = ta.crossover(smi, smiEMA) and smi < oversold
 deadCross = ta.crossunder(smi, smiEMA) and smi > overbought
 
@@ -48,9 +50,9 @@ smiPlot = plot(smi, "SMI", color = color.blue)
 plot(smiEMA, "SMI-based EMA", color = color.orange)
 plot(smiDiv, title = "smiDiv", style = plot.style_columns, color = (smiDiv >= 0 ? (smiDiv[1] < smiDiv ? #26A69A : #B2DFDB) : (smiDiv[1] < smiDiv ? #FFCDD2 : #FF5252)))
 
-overbought = hline(40, "Overbought Line")
-oversold   = hline(-40, "Oversold Line")
-fill(overbought, oversold, color = color.new(color.blue, 90))
+obLine = hline(40, "Overbought Line")
+osLine   = hline(-40, "Oversold Line")
+fill(obLine, osLine, color = color.new(color.blue, 90))
 hline(0, "Middle Line", color = color.new(color.gray, 50))
 
 midLinePlot = plot(0, color = na, editable = false, display = display.none)

@@ -2,11 +2,9 @@
 // © rhapsodyz
 
 //@version=5
-indicator(title     = "TD Sequential Number", 
-     shorttitle     = "TD", 
-     overlay        = false, 
-     timeframe      = timeframe.period, 
-     timeframe_gaps = true)
+indicator(title = "TD Sequential Number", 
+     shorttitle = "TD", 
+     overlay    = false)
 
 // ##################
 // === Indicators ===

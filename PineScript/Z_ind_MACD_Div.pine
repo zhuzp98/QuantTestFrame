@@ -4,9 +4,7 @@
 //@version=5
 indicator(title     = "MACD Hist Divergence",
      shorttitle     = "MACD-Div",
-     overlay        = false,
-     timeframe      = timeframe.period, 
-     timeframe_gaps = true)
+     overlay        = false)
 
 // ##################
 // === Parameters ===
