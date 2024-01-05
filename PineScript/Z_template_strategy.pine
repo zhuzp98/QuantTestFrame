@@ -1,0 +1,95 @@
+// This work is licensed under a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) https://creativecommons.org/licenses/by-nc-sa/4.0/
+// © rhapsodyz
+
+//@version=5
+strategy(title          = "Strategy", 
+     shorttitle         = "Stg",
+     overlay            = true, 
+     pyramiding         = 0, 
+     initial_capital    = 100000,
+     default_qty_type   = strategy.percent_of_equity, 
+     default_qty_value  = 100, 
+     commission_type    = strategy.commission.percent, 
+     commission_value   = 0.04, 
+     slippage           = 2)
+
+// #######################
+// === General Numbers ===
+// #######################
+
+// === Equity Usage ===
+equityUsage = input.float(0.9, title="Equity Usage Percentage", group = "General Settings")
+_qty        = (strategy.equity * equityUsage) / close
+
+// === Input A Linear Regression Channel ===
+
+
+// === Input B ===
+
+
+// === Input C ===
+
+
+// ##################
+// === Indicators ===
+// ##################
+
+// === Indicator A ===
+
+
+// === Indicator B ===
+
+
+// === Indicator C ===
+
+
+// ##################
+// === Conditions ===
+// ##################
+
+// === Condition A ===
+
+
+// === Condition B ===
+
+
+// === Condition C ===
+
+
+// #######################
+// === Risk Management ===
+// #######################
+
+// === Stop-loss ===
+stopLoss   = input(3, "Stop Loss")
+var float stopLossPrice = na
+
+// === Take-profit ===
+takeProfit = input(30, "Take Profit")
+var float takeProfitPrice = na
+
+// #######################
+// === Order Execution ===
+// #######################
+
+// === Execute long entry ===
+if enterLong
+    stopLossPrice   := close * (1 - stopLoss/100)
+    takeProfitPrice := close * (1 + takeProfit/100)
+    strategy.entry("Long", strategy.long, qty = _qty)
+    strategy.exit("exit", "Long", stop = stopLossPrice, limit = takeProfitPrice)
+
+// === Execute long exit ===
+if exitLong
+    strategy.close("Long", qty_percent=100)
+
+// === Execute short entry ===
+if enterShort
+    stopLossPrice   := close * (1 + stopLoss/100)
+    takeProfitPrice := close * (1 - takeProfit/100)
+    strategy.entry("Short", strategy.short, qty = _qty)
+    strategy.exit("Exit", "Short", stop = stopLossPrice, limit = takeProfitPrice)
+
+// === Execute short exit ===
+if exitShort
+    strategy.close("Short", qty_percent = 100)
