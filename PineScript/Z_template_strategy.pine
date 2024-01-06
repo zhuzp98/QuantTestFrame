@@ -21,7 +21,7 @@ strategy(title          = "Strategy",
 equityUsage = input.float(0.9, title="Equity Usage Percentage", group = "General Settings")
 _qty        = (strategy.equity * equityUsage) / close
 
-// === Input A Linear Regression Channel ===
+// === Input A ===
 
 
 // === Input B ===
@@ -61,11 +61,11 @@ _qty        = (strategy.equity * equityUsage) / close
 // #######################
 
 // === Stop-loss ===
-stopLoss   = input(3, "Stop Loss")
+stopLoss   = input.float(3.0, title = "Stop Loss", group = "General Settings")
 var float stopLossPrice = na
 
 // === Take-profit ===
-takeProfit = input(30, "Take Profit")
+takeProfit = input.float(30.0, title = "Take Profit", group = "General Settings")
 var float takeProfitPrice = na
 
 // #######################
