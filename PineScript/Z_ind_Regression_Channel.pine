@@ -10,8 +10,8 @@ indicator(title     = "Linear Regression Channel",
 // === Parameters ===
 // ##################
 
-lengthInput         = input.int(60, minval = 1, maxval = 5000, title = "Length", group = "Regression Settings")
-sourceInput         = input.source(hl2, title = "Source", group = "Regression Settings")
+lengthInput         = input.int(60, minval = 1, maxval = 5000, title = "Length", inline = "", group = "Regression Settings")
+sourceInput         = input.source(hl2, title = "Source", inline = "", group = "Regression Settings")
 useUpperDevInput    = input.bool(true, title = "Upper Deviation", inline = "Upper Deviation", group = "Channel Settings")
 upperMultInput      = input.float(2.0, title = "", inline = "Upper Deviation", group = "Channel Settings")
 useLowerDevInput    = input.bool(true, title = "Lower Deviation", inline = "Lower Deviation", group = "Channel Settings")

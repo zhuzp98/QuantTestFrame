@@ -22,26 +22,41 @@ equityUsage = input.float(0.9, title="Equity Usage Percentage", group = "General
 _qty        = (strategy.equity * equityUsage) / close
 
 // === Input A Linear Regression Channel ===
-lengthInput         = input.int(60, minval = 1, maxval = 5000, title = "Length", group = "Regression Settings")
-sourceInput         = input.source(hl2, title = "Source", group = "Regression Settings")
-useUpperDevInput    = input.bool(true, title = "Upper Deviation", inline = "Upper Deviation", group = "Channel Settings")
-upperMultInput      = input.float(2.0, title = "", inline = "Upper Deviation", group = "Channel Settings")
-useLowerDevInput    = input.bool(true, title = "Lower Deviation", inline = "Lower Deviation", group = "Channel Settings")
-lowerMultInput      = input.float(2.0, title = "", inline = "Lower Deviation", group = "Channel Settings")
-showPearsonInput    = input.bool(false, title = "Pearson's R", inline = "Display Settings", group = "Display Settings")
-extendLeftInput     = input.bool(false, title = "Extend Lines Left", inline = "Display Settings", group = "Display Settings")
-extendRightInput    = input.bool(false, title = "Extend Lines Right", inline = "Display Settings", group = "Display Settings")
-colorUpper          = input.color(color.new(color.blue, 85), title = "", inline = "Color Settings", group = "Color Settings")
-colorLower          = input.color(color.new(color.red, 85), title = "", inline = "Color Settings", group = "Color Settings")
-takeProfit          = input.float(0.618, minval = 0.382, maxval = 2.618, title = "TakeProfit", inline = "TP/SL Settings", group = "TP/SL Settings")
-stopLoss            = input.float(0.206, minval = 0.127, maxval = 0.872, title = "StopLoss", inline = "TP/SL Settings", group = "TP/SL Settings")
+group1 = "Regression Settings"
+group2 = "TP/SL Settings"
 
+lengthInput         = input.int(60, minval = 1, maxval = 5000, title = "Regression Length", group = group1)
+sourceInput         = input.source(hl2, title = "Regression Source", group = group1)
+useUpperDevInput    = input.bool(true, title = "Upper Deviation", inline = "Upper Deviation", group = group1)
+upperMultInput      = input.float(2.0, title = "", inline = "Upper Deviation", group = group1)
+useLowerDevInput    = input.bool(true, title = "Lower Deviation", inline = "Lower Deviation", group = group1)
+lowerMultInput      = input.float(2.0, title = "", inline = "Lower Deviation", group = group1)
+showPearsonInput    = input.bool(false, title = "Pearson's R", inline = "Display Settings", group = group1)
+extendLeftInput     = input.bool(false, title = "Extend Lines Left", inline = "Display Settings", group = group1)
+extendRightInput    = input.bool(false, title = "Extend Lines Right", inline = "Display Settings", group = group1)
+colorUpper          = input.color(color.new(color.blue, 85), title = "", inline = "Color Settings", group = group1)
+colorLower          = input.color(color.new(color.red, 85), title = "", inline = "Color Settings", group = group1)
+takeProfit          = input.float(0.618, minval = 0.382, maxval = 2.618, title = "TakeProfit", inline = "TP/SL Settings", group = group2)
+stopLoss            = input.float(0.206, minval = 0.127, maxval = 0.872, title = "StopLoss", inline = "TP/SL Settings", group = group2)
 
-// === Input B Divergence for Many Indicators ===
+// === Input B Multiple MA ===
+group3      = "Multiple MA Settings"
+baseType    = input.string("EMA", options = ["EMA", "SMA", "HMA"], title = "Base MA Type", inline = "Base MA", group = group3)
+slowType    = input.string("HMA", options = ["EMA", "SMA", "HMA"], title = "Slow MA Type", inline = "Slow MA", group = group3)
+fastType    = input.string("EMA", options = ["EMA", "SMA", "HMA"], title = "Fast MA Type", inline = "Fast MA", group = group3)
+baseLength  = input.int(200, minval = 120, maxval = 720, title = "Base MA Length", inline = "Base MA", group = group3)
+slowLength  = input.int(100, minval = 60, maxval = 200, title = "Slow MA Length", inline = "Slow MA", group = group3)
+fastLength  = input.int(60, minval = 12, maxval = 60, title = "Fast MA Length", inline = "Fast MA", group = group3)
 
-
-// === Input C ===
-
+// === Input C RSI %B ===
+group4 = "RSI %B Settings"
+rsiLength       = input.int(6, minval=1, title="Length", inline = "RSI", group = group4)
+rsiSource       = input.source(hlc3, "Source", inline = "RSI", group = group4)
+rsiRawBreak     = input.int(25, minval = 1, title = "RSI Raw Breakout Value", group = group4)
+rsiMALength     = input.int(14, title="Boll Length", group = group4)
+rsiBollMult     = input.float(2.0, minval=0.001, maxval=50, title="Boll StdDev", group = group4)
+rsiDivBreakLow  = input.float(0.9, minval=0.001, maxval=3, title="Breakout Value Low", group = group4)
+rsiDivBreakHigh = input.float(1.4, minval=0.001, maxval=3, title="Breakout Value High", group = group4)
 
 // ##################
 // === Indicators ===
@@ -111,15 +126,33 @@ upperEndPrice   = endPrice + (useUpperDevInput ? upperMultInput * stdDev : upDev
 lowerStartPrice = startPrice + (useLowerDevInput ? -lowerMultInput * stdDev : -dnDev)
 lowerEndPrice   = endPrice + (useLowerDevInput ? -lowerMultInput * stdDev : -dnDev)
 widthChannel    = int(2 * upperMultInput * stdDev / syminfo.mintick)
+dynFactor       = 
 tpValue         = int(widthChannel*takeProfit)
 slValue         = int(widthChannel*stopLoss)
 float trend     = math.sign(startPrice - endPrice)
 
 // === Indicator B Multiple MA ===
 
+maSwitch(type, length) =>
+    src = close
+    if type == "EMA"
+        ta.ema(src, length)
+    if type == "SMA"
+        ta.sma(src, length)
+    if type == "HMA"
+        ta.wma(2*ta.wma(src, length/2)-ta.wma(src, length), math.floor(math.sqrt(length)))
+
+baseMA = maSwitch(baseType, baseLength)
+slowMA = maSwitch(slowType, slowLength)
+fastMA = maSwitch(fastType, fastLength)
 
 // === Indicator C RSI %B ===
 
+up      = ta.rma(math.max(ta.change(rsiSource), 0), rsiLength)
+down    = ta.rma(-math.min(ta.change(rsiSource), 0), rsiLength)
+rsi     = down == 0 ? 50 : up == 0 ? -50 : 50 - (100 / (1 + up / down))
+rsiMA   = ta.ema(rsi, rsiMALength)
+rsiDiv  = (rsi - rsiMA) / (ta.stdev(rsi, rsiMALength) * rsiBollMult)
 
 // === Indicator D TD Sequantial ===
 
@@ -151,8 +184,8 @@ sl4 = tp2
 
 // === Condition A Linear Regression Channel ===
 enterConditionLGC = tpValue/3 * 0.3 >= commissionCost
-longLGC = close < endPrice - 0.2 * widthChannel
-shortLGC = close > endPrice + 0.2 * widthChannel
+longLGC = close < endPrice - 0.25 * widthChannel
+shortLGC = close > endPrice + 0.25 * widthChannel
 
 // === Condition B ===
 
