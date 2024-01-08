@@ -20,6 +20,7 @@ showBreakout    = input.bool(true, title="Show Breakout", group="RSI Settings")
 rsiDivBreakLow  = input.float(0.9, minval=0.001, maxval=3, title="Breakout Value Low", group="RSI Settings")
 rsiDivBreakHigh = input.float(1.4, minval=0.001, maxval=3, title="Breakout Value High", group="RSI Settings")
 rsiRawBreak     = input.int(25, minval = 1, title = "RSI Raw Breakout Value", group = "RSI Settings")
+
 // ##################
 // === Indicators ===
 // ##################
