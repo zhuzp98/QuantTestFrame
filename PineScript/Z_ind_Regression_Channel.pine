@@ -34,6 +34,17 @@ extendStyle = switch
     extendRightInput                        => extend.right
     => extend.none
 
+get_channel(source, length)=>
+    mid = math.sum(source, length) / length
+    slope = ta.linreg(source, length, 0) - ta.linreg(source, length, 1)
+    intercept  = mid - slope * math.floor(length / 2) + ((1 - (length % 2)) / 2) * slope
+    endy = intercept  + slope * (length - 1) 
+    dev = 0.0
+    for i = 0 to length - 1
+        dev := dev + math.pow(source[i] - (slope * (length - i) + intercept), 2)
+    dev := math.sqrt(dev/length)
+    [intercept, endy, dev, slope]
+
 calcSlope(source, length) =>
     max_bars_back(source, 5000)
     if not barstate.islast or length <= 1

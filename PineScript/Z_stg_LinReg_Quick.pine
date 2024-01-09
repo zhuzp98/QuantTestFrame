@@ -6,7 +6,7 @@ strategy(title          = "LinReg 5m Quick Strategy",
      shorttitle         = "LinReg 5m",
      overlay            = true, 
      pyramiding         = 0, 
-     initial_capital    = 100000,
+     initial_capital    = 1000,
      default_qty_type   = strategy.percent_of_equity, 
      default_qty_value  = 100, 
      commission_type    = strategy.commission.percent, 
@@ -18,8 +18,13 @@ strategy(title          = "LinReg 5m Quick Strategy",
 // #######################
 
 // === Equity Usage ===
-equityUsage = input.float(0.9, title="Equity Usage Percentage", group = "General Settings")
-_qty        = (strategy.equity * equityUsage) / close
+longDealsEnabled    = input.bool(true, title = "Long Deals", inline = "Long/Short Deals", group = "General Settings")
+shortDealsEnabled   = input.bool(true, title = "Short Deals", tooltip = "Enable long/short deals. An open signal will be emited when the long/short start deal conditions are met. If this option is un-checked you will not enter into long/short positions.", inline = "Long/Short Deals", group = "General Settings")
+doPercentUsage      = input.bool(true, title = "Equity Usage Percentage", inline = "Equity Usage Percentage", group = "General Settings")
+equityUsage         = input.float(0.9, title="", inline = "Equity Usage Percentage", group = "General Settings")
+doQuantity          = input.bool(false, title = "Order Quantity", inline = "Order Quantity", group = "General Settings")
+orderQuantity       = input.float(1.0, title = "", inline = "Order Quantity", group = "General Settings")
+_qty                = doPercentUsage ? (strategy.equity * equityUsage) / close : (doQuantity ? orderQuantity : na)
 
 // === Input A Linear Regression Channel ===
 group1 = "Regression Settings"
@@ -39,20 +44,22 @@ colorLower          = input.color(color.new(color.red, 85), title = "", inline =
 takeProfit          = input.float(0.618, minval = 0.382, maxval = 2.618, title = "TakeProfit", inline = "TP/SL Settings", group = group2)
 stopLoss            = input.float(0.206, minval = 0.127, maxval = 0.872, title = "StopLoss", inline = "TP/SL Settings", group = group2)
 
+
 // === Input B Multiple MA ===
 group3      = "Multiple MA Settings"
+sourceMA    = input.source(close, title = "MA Source", group = group3)
 baseType    = input.string("EMA", options = ["EMA", "SMA", "HMA"], title = "Base MA Type", inline = "Base MA", group = group3)
 slowType    = input.string("HMA", options = ["EMA", "SMA", "HMA"], title = "Slow MA Type", inline = "Slow MA", group = group3)
 fastType    = input.string("EMA", options = ["EMA", "SMA", "HMA"], title = "Fast MA Type", inline = "Fast MA", group = group3)
-baseLength  = input.int(200, minval = 120, maxval = 720, title = "Base MA Length", inline = "Base MA", group = group3)
-slowLength  = input.int(100, minval = 60, maxval = 200, title = "Slow MA Length", inline = "Slow MA", group = group3)
-fastLength  = input.int(60, minval = 12, maxval = 60, title = "Fast MA Length", inline = "Fast MA", group = group3)
+baseLength  = input.int(200, minval = 120, maxval = 720, title = "Length", inline = "Base MA", group = group3)
+slowLength  = input.int(100, minval = 60, maxval = 200, title = "Length", inline = "Slow MA", group = group3)
+fastLength  = input.int(60, minval = 12, maxval = 60, title = "Length", inline = "Fast MA", group = group3)
 
 // === Input C RSI %B ===
 group4 = "RSI %B Settings"
-rsiLength       = input.int(6, minval=1, title="Length", inline = "RSI", group = group4)
 rsiSource       = input.source(hlc3, "Source", inline = "RSI", group = group4)
-rsiRawBreak     = input.int(25, minval = 1, title = "RSI Raw Breakout Value", group = group4)
+rsiLength       = input.int(6, minval=1, title="Length", inline = "RSI", group = group4)
+rsiRawBreak     = input.int(25, minval = 1, title = "Breakout", inline = "RSI", group = group4)
 rsiMALength     = input.int(14, title="Boll Length", group = group4)
 rsiBollMult     = input.float(2.0, minval=0.001, maxval=50, title="Boll StdDev", group = group4)
 rsiDivBreakLow  = input.float(0.9, minval=0.001, maxval=3, title="Breakout Value Low", group = group4)
@@ -63,88 +70,39 @@ rsiDivBreakHigh = input.float(1.4, minval=0.001, maxval=3, title="Breakout Value
 // ##################
 
 // === Indicator A Linear Regression Channel ===
+getChannel(source, length) =>
+    mid = math.sum(source, length) / length
+    slope = ta.linreg(source, length, 0) - ta.linreg(source, length, 1)
+    intercept  = mid - slope * math.floor(length / 2) + ((1 - (length % 2)) / 2) * slope
+    endy = intercept  + slope * (length - 1) 
+    dev = 0.0
+    for i = 0 to length - 1
+        dev := dev + math.pow(source[i] - (slope * (length - i) + intercept), 2)
+    dev := math.sqrt(dev/length)
+    [slope, endy, intercept, dev]
 
-calcSlope(source, length) =>
-    max_bars_back(source, 5000)
-    if not barstate.islast or length <= 1
-        [float(na), float(na), float(na)]
-    else
-        sumX = 0.0
-        sumY = 0.0
-        sumXSqr = 0.0
-        sumXY = 0.0
-        for i = 0 to length - 1 by 1
-            val = source[i]
-            per = i + 1.0
-            sumX += per
-            sumY += val
-            sumXSqr += per * per
-            sumXY += val * per
-        slope = (length * sumXY - sumX * sumY) / (length * sumXSqr - sumX * sumX)
-        average = sumY / length
-        intercept = average - slope * sumX / length + slope
-        [slope, average, intercept]
- 
-calcDev(source, length, slope, average, intercept) =>
-    upDev = 0.0
-    dnDev = 0.0
-    stdDevAcc = 0.0
-    dsxx = 0.0
-    dsyy = 0.0
-    dsxy = 0.0
-    periods = length - 1
-    daY = intercept + slope * periods / 2
-    val = intercept
-    for j = 0 to periods by 1
-        price = high[j] - val
-        if price > upDev
-            upDev := price
-        price := val - low[j]
-        if price > dnDev
-            dnDev := price
-        price := source[j]
-        dxt = price - average
-        dyt = val - daY
-        price -= val
-        stdDevAcc += price * price
-        dsxx += dxt * dxt
-        dsyy += dyt * dyt
-        dsxy += dxt * dyt
-        val += slope
-    stdDev = math.sqrt(stdDevAcc / (periods == 0 ? 1 : periods))
-    pearsonR = dsxx == 0 or dsyy == 0 ? 0 : dsxy / math.sqrt(dsxx * dsyy)
-    [stdDev, pearsonR, upDev, dnDev]
-    
-       
-[s, a, i]                           = calcSlope(sourceInput, lengthInput)
-[stdDev, pearsonR, upDev, dnDev]    = calcDev(sourceInput, lengthInput, s, a, i)
+[slope, endy, intercept, stdDev] = getChannel(sourceInput, lengthInput)
 
-startPrice      = i + s * (lengthInput - 1)
-endPrice        = i
-upperStartPrice = startPrice + (useUpperDevInput ? upperMultInput * stdDev : upDev)
-upperEndPrice   = endPrice + (useUpperDevInput ? upperMultInput * stdDev : upDev)
-lowerStartPrice = startPrice + (useLowerDevInput ? -lowerMultInput * stdDev : -dnDev)
-lowerEndPrice   = endPrice + (useLowerDevInput ? -lowerMultInput * stdDev : -dnDev)
+startPrice      = endy - slope * (lengthInput - 1)
+endPrice        = endy
+upperEndPrice   = endPrice + upperMultInput * stdDev
+lowerEndPrice   = endPrice - lowerMultInput * stdDev
 widthChannel    = int(2 * upperMultInput * stdDev / syminfo.mintick)
-dynFactor       = 
 tpValue         = int(widthChannel*takeProfit)
 slValue         = int(widthChannel*stopLoss)
 float trend     = math.sign(startPrice - endPrice)
 
 // === Indicator B Multiple MA ===
 
-maSwitch(type, length) =>
-    src = close
-    if type == "EMA"
-        ta.ema(src, length)
-    if type == "SMA"
-        ta.sma(src, length)
-    if type == "HMA"
-        ta.wma(2*ta.wma(src, length/2)-ta.wma(src, length), math.floor(math.sqrt(length)))
+ma(src, type, length) =>
+    switch type
+        "SMA" => ta.sma(src, length)
+        "EMA" => ta.ema(src, length)
+        "HMA" => ta.wma(2*ta.wma(src, length/2)-ta.wma(src, length), math.floor(math.sqrt(length)))
 
-baseMA = maSwitch(baseType, baseLength)
-slowMA = maSwitch(slowType, slowLength)
-fastMA = maSwitch(fastType, fastLength)
+baseMA = ma(close, baseType, baseLength)
+slowMA = ma(close, slowType, slowLength)
+fastMA = ma(close, fastType, fastLength)
 
 // === Indicator C RSI %B ===
 
@@ -166,17 +124,45 @@ commissionCost = int(0.001 * close / syminfo.mintick)
 tp1 = int(tpValue/3)
 tp2 = int(2*tpValue/3)
 tp3 = tpValue
+tp4 = widthChannel
 
-_qty_pct1 = 0.3
-_qty_pct2 = 0.3
-_qty_pct3 = 0.3
-_qty_pct4 = 0.1
+_qty_pct1 = 30
+_qty_pct2 = 30
+_qty_pct3 = 30
+_qty_pct4 = 10
 
 // === Stop-loss ===
-sl1 = - slValue
+sl1 = slValue
 sl2 = commissionCost
 sl3 = tp1
 sl4 = tp2
+
+// === TP/SL Stage ===
+longIsActive = strategy.opentrades.size(strategy.opentrades - 1) > 0
+shortIsActive = strategy.opentrades.size(strategy.opentrades - 1) < 0
+emptyPosition = strategy.opentrades.size(strategy.opentrades - 1) == 0
+
+getProfitLevel() =>
+    if longIsActive
+        int((high - strategy.position_avg_price) / syminfo.mintick)
+    else if shortIsActive 
+        int((strategy.position_avg_price - low) / syminfo.mintick) 
+    else 
+        0
+
+getCurrentStage() =>
+    var stage = 0
+    if emptyPosition 
+        stage := 0
+    if stage == 0 and (longIsActive or shortIsActive) and getProfitLevel() < tp1
+        stage := 1
+    else if stage == 1 and getProfitLevel() >= tp1
+        stage := 2
+    else if stage == 2 and getProfitLevel() >= tp2
+        stage := 3
+    stage
+
+curStage = getCurrentStage()
 
 // ##################
 // === Conditions ===
@@ -187,7 +173,11 @@ enterConditionLGC = tpValue/3 * 0.3 >= commissionCost
 longLGC = close < endPrice - 0.25 * widthChannel
 shortLGC = close > endPrice + 0.25 * widthChannel
 
-// === Condition B ===
+// === Condition B Multiple MA ===
+buySide = slowMA > baseMA
+sellSide = slowMA < baseMA
+overboughtShort = ta.crossunder(close, slowMA) and buySide
+oversoldLong = ta.crossover(close, slowMA) and sellSide
 
 // === Condition C ===
 
@@ -195,25 +185,32 @@ shortLGC = close > endPrice + 0.25 * widthChannel
 // #######################
 // === Order Execution ===
 // #######################
+// === TP/SL in Execution ===
+var float tpPrice1 = na
+var float tpPrice2 = na
+var float tpPrice3 = na
+var float tpPrice4 = na
+
+var float slPrice1 = na
+var float slPrice2 = na
+var float slPrice3 = na
+var float slPrice4 = na
 
 // === Execute long entry ===
-if enterLong
-    stopLossPrice   := close * (1 - stopLoss/100)
-    takeProfitPrice := close * (1 + takeProfit/100)
+if oversoldLong and enterConditionLGC
     strategy.entry("Long", strategy.long, qty = _qty)
-    strategy.exit("exit", "Long", stop = stopLossPrice, limit = takeProfitPrice)
-
-// === Execute long exit ===
-if exitLong
-    strategy.close("Long", qty_percent=100)
 
 // === Execute short entry ===
-if enterShort
-    stopLossPrice   := close * (1 + stopLoss/100)
-    takeProfitPrice := close * (1 - takeProfit/100)
+if overboughtShort and enterConditionLGC
     strategy.entry("Short", strategy.short, qty = _qty)
-    strategy.exit("Exit", "Short", stop = stopLossPrice, limit = takeProfitPrice)
-
-// === Execute short exit ===
-if exitShort
-    strategy.close("Short", qty_percent = 100)
+ 
+// === Execute exit ===
+if not emptyPosition
+    if curStage == 1
+        strategy.exit("x1", loss = sl1, profit = tp1, qty_percent = _qty_pct1, comment = "sl1 or tp1")
+    else if curStage == 2
+        strategy.exit("x2", loss = sl2, profit = tp2, qty_percent = _qty_pct2, comment = "sl2 or tp2")
+    else if curStage == 3
+        strategy.exit("x3", loss = sl3, profit = tp3, qty_percent = _qty_pct3, comment = "sl3 or tp3")
+    else
+        strategy.exit("x4", loss = sl4, profit = widthChannel, qty_percent = _qty_pct4, comment = "sl4 or tp4")
