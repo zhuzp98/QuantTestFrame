@@ -2,10 +2,10 @@
 // © rhapsodyz
 
 //@version=5
-strategy(title          = "LinReg Quick Strategy", 
+strategy(title          = "[Z] LinReg Quick Strategy", 
      shorttitle         = "LinReg QcK",
      overlay            = true, 
-     pyramiding         = 0, 
+     pyramiding         = 2, 
      initial_capital    = 1000,
      default_qty_type   = strategy.percent_of_equity, 
      default_qty_value  = 100, 
@@ -24,7 +24,7 @@ doPercentUsage      = input.bool(true, title = "Equity Usage Percentage", inline
 equityUsage         = input.float(0.9, title="", inline = "Equity Usage Percentage", group = "General Settings")
 doQuantity          = input.bool(false, title = "Order Quantity", inline = "Order Quantity", group = "General Settings")
 orderQuantity       = input.float(1.0, title = "", inline = "Order Quantity", group = "General Settings")
-_qty                = doPercentUsage ? (strategy.equity * equityUsage) / close : (doQuantity ? orderQuantity : strategy.equity / close)
+_qty                = doPercentUsage ? (strategy.equity * equityUsage) / close : (doQuantity ? orderQuantity : na)
 
 // === TP/SL Settings ===
 group0 = "TP/SL Settings"
@@ -43,15 +43,12 @@ lowerMultInput      = input.float(2.0, title = "", inline = "Lower Deviation", g
 // === Input B Multiple MA ===
 group3      = "Multiple MA Settings"
 sourceMA    = input.source(close, title = "MA Source", group = group3)
-baseType    = input.string("EMA", options = ["EMA", "SMA", "HMA"], title = "Base Type", inline = "Base MA", group = group3)
-slowType    = input.string("HMA", options = ["EMA", "SMA", "HMA"], title = "Slow Type", inline = "Slow MA", group = group3)
-fastType    = input.string("EMA", options = ["EMA", "SMA", "HMA"], title = "Fast Type", inline = "Fast MA", group = group3)
+baseType    = input.string("EMA", options = ["EMA", "SMA", "HMA"], title = "Base MA Type", inline = "Base MA", group = group3)
+slowType    = input.string("HMA", options = ["EMA", "SMA", "HMA"], title = "Slow MA Type", inline = "Slow MA", group = group3)
+fastType    = input.string("EMA", options = ["EMA", "SMA", "HMA"], title = "Fast MA Type", inline = "Fast MA", group = group3)
 baseLength  = input.int(200, minval = 60, maxval = 720, title = "Length", inline = "Base MA", group = group3)
 slowLength  = input.int(100, minval = 24, maxval = 200, title = "Length", inline = "Slow MA", group = group3)
 fastLength  = input.int(60, minval = 5, maxval = 60, title = "Length", inline = "Fast MA", group = group3)
-baseSource  = input.source(close, title = "Source", inline = "Base MA", group = group3)
-slowSource  = input.source(close, title = "Source", inline = "Slow MA", group = group3)
-fastSource  = input.source(close, title = "Source", inline = "Fast MA", group = group3)
 
 // === Input C ===
 
@@ -89,9 +86,9 @@ ma(src, type, length) =>
         "EMA" => ta.ema(src, length)
         "HMA" => ta.wma(2*ta.wma(src, length/2)-ta.wma(src, length), math.floor(math.sqrt(length)))
 
-baseMA = ma(baseSource, baseType, baseLength)
-slowMA = ma(slowSource, slowType, slowLength)
-fastMA = ma(fastSource, fastType, fastLength)
+baseMA = ma(close, baseType, baseLength)
+slowMA = ma(close, slowType, slowLength)
+fastMA = ma(close, fastType, fastLength)
 
 // === Indicator C ===
 
@@ -139,11 +136,11 @@ getCurrentStage() =>
     var stage = 0
     if emptyPosition 
         stage := 0
-    else if stage == 0 and (longIsActive or shortIsActive) and getProfitLevel() < tp1
+    else if (longIsActive or shortIsActive) and getProfitLevel() < tp1
         stage := 1
-    else if stage == 1 and getProfitLevel() >= tp1
+    else if (longIsActive or shortIsActive) and getProfitLevel() >= tp1
         stage := 2
-    else if stage == 2 and getProfitLevel() >= tp2
+    else if (longIsActive or shortIsActive) and getProfitLevel() >= tp2
         stage := 3
     stage
 
@@ -195,18 +192,18 @@ curStage = getCurrentStage()
 if not emptyPosition
     if curStage == 1
 //        strategy.exit("x1", loss = sl1, profit = tp1, qty_percent = _qty_pct1, comment = "sl1 or tp1")
-        strategy.exit("x1", profit = tp1, qty_percent = _qty_pct1, comment = "sl1 or tp1")
-        strategy.exit("x1", loss = sl1, qty_percent = 100, comment = "sl1 or tp1")
+        strategy.exit("t1", profit = tp1, qty_percent = _qty_pct1, comment = "tp1")
+        strategy.exit("x1", loss = sl1, qty_percent = _qty_pct1, comment = "sl1")
     else if curStage == 2
 //        strategy.exit("x2", loss = sl2, profit = tp2, qty_percent = _qty_pct2, comment = "sl2 or tp2")
-        strategy.exit("x2", profit = tp2, qty_percent = _qty_pct2, comment = "sl2 or tp2")
-        strategy.exit("x2", loss = sl2, qty_percent = 100, comment = "sl2 or tp2")
+        strategy.exit("t2", profit = tp2, qty_percent = _qty_pct2, comment = "tp2")
+        strategy.exit("x2", loss = sl2, qty_percent = _qty_pct2, comment = "sl2")
     else if curStage == 3
 //       strategy.exit("x3", loss = sl3, profit = tp3, qty_percent = _qty_pct3, comment = "sl3 or tp3")
-        strategy.exit("x3", profit = tp3, qty_percent = _qty_pct3, comment = "sl3 or tp3")
-        strategy.exit("x3", loss = sl3, qty_percent = 100, comment = "sl3 or tp3")
+        strategy.exit("t3", profit = tp3, qty_percent = _qty_pct3, comment = "tp3")
+        strategy.exit("x3", loss = sl3, qty_percent = _qty_pct3, comment = "sl3")
     else
-        strategy.exit("x4", loss = sl4, qty_percent = 100, comment = "sl4 or tp4")
+        strategy.exit("x4", loss = sl4, qty_percent = 100, comment = "sl4")
 
 avgPriceColor = shortIsActive ? color.red : (longIsActive ? color.green : color.yellow)
 plot(strategy.position_avg_price, color = avgPriceColor, linewidth = 2, title = "Avg Position Price")
