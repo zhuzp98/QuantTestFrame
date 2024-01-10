@@ -34,6 +34,8 @@ baseMA = ma(close, baseType, baseLength)
 slowMA = ma(close, slowType, slowLength)
 fastMA = ma(close, fastType, fastLength)
 
+slowColor = close > slowMA ? #00bcd4 : #e91e63
+
 // ##############
 // === Alerts ===
 // ##############
@@ -46,9 +48,9 @@ goldCross = ta.crossover(close, slowMA) and slowMA < baseMA
 // === Plots ===
 // #############
 
-basePlot = plot(baseMA, color = color.red, title = "BaseMA")
-slowPlot = plot(slowMA, color = color.blue, title = "SlowMA")
-fastPlot = plot(fastMA, color = color.green, title = "FastMA")
+basePlot = plot(baseMA, color = color.blue, linewidth = 2,title = "BaseMA")
+slowPlot = plot(slowMA, color = slowColor, linewidth = 4, title = "SlowMA")
+fastPlot = plot(fastMA, color = color.green, linewidth = 2, title = "FastMA")
 
 plotshape(deadCross,  title = "Down",  location=location.abovebar, color=color.rgb(241, 222, 15),  style=shape.labeldown, text="Down",  textcolor = color.black, display = display.pane)
 plotshape(goldCross,  title = "Up",  location=location.belowbar, color=color.rgb(145, 222, 106), style=shape.labelup,   text="Up",  textcolor = color.black, display = display.pane)
