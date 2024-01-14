@@ -2,11 +2,11 @@
 // © rhapsodyz
 
 //@version=5
-indicator(title="RSI with Boll %B", 
-     shorttitle="RSI %B", 
-     precision=2, 
-     timeframe="", 
-     timeframe_gaps=true)
+indicator(title     = "[Z] RSI with Boll %B", 
+     shorttitle     = "RSI %B", 
+     precision      = 2, 
+     timeframe      = "", 
+     timeframe_gaps = true)
 
 // ##################
 // === Parameters ===

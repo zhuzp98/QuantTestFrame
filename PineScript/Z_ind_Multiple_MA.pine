@@ -2,7 +2,7 @@
 // © rhapsodyz
 
 //@version=5
-indicator(title     = "Multiple MA", 
+indicator(title     = "[Z] Multiple MA", 
      shorttitle     = "MMA", 
      overlay        = true, 
      timeframe      = timeframe.period, 

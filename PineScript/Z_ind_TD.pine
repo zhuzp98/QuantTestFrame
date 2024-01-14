@@ -2,7 +2,7 @@
 // © rhapsodyz
 
 //@version=5
-indicator(title = "TD Sequential Number", 
+indicator(title = "[Z] TD Sequential Number", 
      shorttitle = "TD", 
      overlay    = false)
 

@@ -2,7 +2,7 @@
 // © rhapsodyz
 
 //@version=5
-indicator(title     = "Historical Volatility", 
+indicator(title     = "[Z] Historical Volatility", 
      shorttitle     = "HV", 
      format         = format.price, 
      precision      = 2, 

@@ -30,15 +30,19 @@ _qty                = doPercentUsage ? (strategy.equity * equityUsage) / close :
 group0 = "TP/SL Settings"
 takeProfit          = input.float(0.786, minval = 0.382, maxval = 2.618, title = "TakeProfit", inline = "TP/SL Settings", group = group0)
 stopLoss            = input.float(0.262, minval = 0.127, maxval = 0.872, title = "StopLoss", inline = "TP/SL Settings", group = group0)
+_qty_pct1           = input.float(30.0, minval = 1, maxval = 100, title = "TP/SL Qty First", inline = "TP/SL Qty", group = group0)
+_qty_pct2           = input.float(30.0, minval = 1, maxval = 100, title = "Second", inline = "TP/SL Qty", group = group0)
+_qty_pct3           = input.float(30.0, minval = 1, maxval = 100, title = "Third", inline = "TP/SL Qty", group = group0)
 
 // === Input A Linear Regression Channel ===
 group1 = "Regression Settings"
-lengthInput         = input.int(60, minval = 1, maxval = 5000, title = "Regression Length", inline = "Regression", group = group1)
+lengthInput         = input.int(48, minval = 1, maxval = 5000, title = "Regression Length", inline = "Regression", group = group1)
 sourceInput         = input.source(hl2, title = "Source", inline = "Regression", group = group1)
 useUpperDevInput    = input.bool(true, title = "Upper Deviation", inline = "Upper Deviation", group = group1)
 upperMultInput      = input.float(2.0, title = "", inline = "Upper Deviation", group = group1)
 useLowerDevInput    = input.bool(true, title = "Lower Deviation", inline = "Lower Deviation", group = group1)
 lowerMultInput      = input.float(2.0, title = "", inline = "Lower Deviation", group = group1)
+widthLimit          = input.float(2.0, title = "Minimal Channel Width (%)", group = group1)
 
 // === Input B Multiple MA ===
 group3      = "Multiple MA Settings"
@@ -108,11 +112,6 @@ tp2 = int(2*tpValue/3)
 tp3 = tpValue
 tp4 = widthChannel
 
-_qty_pct1 = 30
-_qty_pct2 = 30
-_qty_pct3 = 30
-_qty_pct4 = 10
-
 // === Stop-loss ===
 sl1 = slValue
 sl2 = commissionCost
@@ -152,6 +151,7 @@ getCurrentStage() =>
 
 // === Condition A Linear Regression Channel ===
 enterConditionLGC = tpValue/3 * 0.3 >= commissionCost
+enterConditionWidth = widthChannel*syminfo.mintick / endPrice >= widthLimit / 100
 longLGC = close < endPrice - 0.25 * widthChannel
 shortLGC = close > endPrice + 0.25 * widthChannel
 
@@ -179,11 +179,11 @@ var float slPrice3 = na
 var float slPrice4 = na
 
 // === Execute long entry ===
-if oversoldLong and enterConditionLGC
+if oversoldLong and enterConditionLGC and enterConditionWidth
     strategy.entry("Long", strategy.long, qty = _qty)
 
 // === Execute short entry ===
-if overboughtShort and enterConditionLGC
+if overboughtShort and enterConditionLGC and enterConditionWidth
     strategy.entry("Short", strategy.short, qty = _qty)
  
 // === Execute exit ===

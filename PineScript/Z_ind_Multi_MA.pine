@@ -2,7 +2,7 @@
 // © rhapsodyz
 
 //@version=5
-indicator(title     = "Moving Average", 
+indicator(title     = "[Z] Moving Average", 
      shorttitle     = "MA", 
      overlay        = true)
 

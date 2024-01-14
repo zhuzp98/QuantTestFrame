@@ -2,7 +2,7 @@
 // © rhapsodyz
 
 //@version=5
-indicator(title     = "Candlestick Patterns", 
+indicator(title     = "[Z] Candlestick Patterns", 
      shorttitle     = "Candle Patterns", 
      overlay        = true)
 

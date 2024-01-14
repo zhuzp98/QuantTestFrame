@@ -24,6 +24,7 @@ tdSetup() =>
         setupCount := 0
     [setupCount, setupDirection]
 
+
 // Function to calculate TD Countdown
 tdCountdown(setupCount, setupDirection) =>
     var int countdown = 0
@@ -42,7 +43,7 @@ tdCountdown(setupCount, setupDirection) =>
 countdown = tdCountdown(setup, direction)
 
 // Plotting
-plotshape(series=setup == 9, location=location.abovebar, color=color.green, style=shape.labelup, text="9U")
-plotshape(series=setup == -9, location=location.belowbar, color=color.red, style=shape.labeldown, text="9D")
-plotshape(series=countdown == 13 and direction > 0, location=location.abovebar, color=color.blue, style=shape.labelup, text="13U")
-plotshape(series=countdown == 13 and direction < 0, location=location.belowbar, color=color.purple, style=shape.labelup, text="13D")
+plotshape(series=countdown == 9 and direction > 0, location=location.abovebar, color=color.red, style=shape.labelup, text="9D")
+plotshape(series=countdown == 9 and direction < 0, location=location.belowbar, color=color.green, style=shape.labeldown, text="9U")
+plotshape(series=countdown == 13 and direction > 0, location=location.abovebar, color=color.purple, style=shape.labelup, text="13D")
+plotshape(series=countdown == 13 and direction < 0, location=location.belowbar, color=color.blue, style=shape.labelup, text="13U")

@@ -2,7 +2,7 @@
 // © rhapsodyz
 
 //@version=5
-indicator(title     = "SMI Hist Divergence", 
+indicator(title     = "[Z] SMI Hist Divergence", 
      shorttitle     = "SMI-Div", 
      timeframe      = "", 
      timeframe_gaps = true)

@@ -2,7 +2,7 @@
 // © rhapsodyz
 
 //@version=5
-indicator(title     = "MACD Hist Divergence",
+indicator(title     = "[Z] MACD Hist Divergence",
      shorttitle     = "MACD-Div",
      overlay        = false)
 

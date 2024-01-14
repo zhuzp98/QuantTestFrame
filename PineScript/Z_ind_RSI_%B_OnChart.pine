@@ -2,7 +2,7 @@
 // © rhapsodyz
 
 //@version=5
-indicator(title     = "RSI %B on Chart", 
+indicator(title     = "[Z] RSI %B on Chart", 
      shorttitle     = "RSI %B", 
      overlay        = true, 
      precision      = 2, 

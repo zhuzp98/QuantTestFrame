@@ -2,7 +2,7 @@
 // © rhapsodyz
 
 //@version=5
-indicator(title     = "Linear Regression Channel", 
+indicator(title     = "[Z] Linear Regression Channel", 
      shorttitle     = "LinReg", 
      overlay        = true)
 

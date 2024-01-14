@@ -2,7 +2,7 @@
 // © rhapsodyz
 
 //@version=5
-indicator(title     = "Bollinger Bands", 
+indicator(title     = "[Z] Bollinger Bands", 
      shorttitle     = "Boll", 
      overlay        = true, 
      format         = format.inherit,

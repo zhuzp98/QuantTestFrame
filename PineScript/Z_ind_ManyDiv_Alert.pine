@@ -2,7 +2,7 @@
 // © rhapsodyz
 
 //@version=5
-indicator(title     = "Many Divergence Alert", 
+indicator(title     = "[Z] Many Divergence Alert", 
      shorttitle     = "ManyDiv Alert", 
      overlay        = true,
      max_bars_back      = 1000, 
