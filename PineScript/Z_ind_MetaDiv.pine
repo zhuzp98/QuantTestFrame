@@ -2,8 +2,8 @@
 // © rhapsodyz
 
 //@version=5
-indicator(title     = "Many Divergence Alert", 
-     shorttitle     = "ManyDiv Alert", 
+indicator(title     = "[Z] Meta Divergence", 
+     shorttitle     = "MetaDiv", 
      overlay        = true,
      max_bars_back      = 1000, 
      max_lines_count    = 400, 
