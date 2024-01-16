@@ -2,7 +2,7 @@
 // © rhapsodyz
 
 //@version=5
-indicator(title     = "[Z] RSI %B on Chart", 
+indicator(title     = "RSI %B on Chart", 
      shorttitle     = "RSI %B", 
      overlay        = true, 
      precision      = 2, 
@@ -13,14 +13,14 @@ indicator(title     = "[Z] RSI %B on Chart",
 // === Parameters ===
 // ##################
 
-rsiLength       = input.int(6, minval=1, title="RSI Length", group="RSI Settings")
-rsiSource       = input.source(hlc3, "RSI Source", group="RSI Settings")
+rsiLength       = input.int(14, minval=1, title="RSI Length", group="RSI Settings")
+rsiSource       = input.source(close, "RSI Source", group="RSI Settings")
 rsiMALength     = input.int(14, title="MA Length", group="Boll Settings")
 rsiBollMult     = input.float(1.95, minval=0.001, maxval=50, title="Boll StdDev", group="Boll Settings")
 showBreakout    = input.bool(true, title="Show Breakout", group="RSI Settings")
-rsiDivBreakLow  = input.float(0.9, minval=0.001, maxval=3, title="Breakout Value Low", group="RSI Settings")
+rsiDivBreakLow  = input.float(0.75, minval=0.001, maxval=3, title="Breakout Value Low", group="RSI Settings")
 rsiDivBreakHigh = input.float(1.4, minval=0.001, maxval=3, title="Breakout Value High", group="RSI Settings")
-rsiRawBreak     = input.int(25, minval = 1, title = "RSI Raw Breakout Value", group = "RSI Settings")
+rsiRawBreak     = input.int(12, minval = 1, title = "RSI Raw Breakout Value", group = "RSI Settings")
 
 // ##################
 // === Indicators ===
@@ -51,7 +51,7 @@ alertcondition(break_down, title = "RSI Overbought", message = "New RSI overboug
 // === Plots ===
 // #############
 
-rsiPlot     = plot(rsi, color = na, editable = false, display = display.status_line)
+rsiPlot     = plot(rsi, color = color.black, editable = false, display = display.status_line)
 rsiDivPlot  = plot(rsiDiv, color = color.orange, editable = false, display = display.status_line)
 
 plotshape(series = break_down, title = 'RSI Bought Breakout', style = shape.triangledown, location = location.abovebar, color = #f23645, display = display.pane)

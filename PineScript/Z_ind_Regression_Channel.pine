@@ -10,7 +10,7 @@ indicator(title     = "[Z] Linear Regression Channel",
 // === Parameters ===
 // ##################
 
-lengthInput         = input.int(60, minval = 1, maxval = 5000, title = "Length", inline = "", group = "Regression Settings")
+lengthInput         = input.int(48, minval = 1, maxval = 5000, title = "Length", inline = "", group = "Regression Settings")
 sourceInput         = input.source(hl2, title = "Source", inline = "", group = "Regression Settings")
 useUpperDevInput    = input.bool(true, title = "Upper Deviation", inline = "Upper Deviation", group = "Channel Settings")
 upperMultInput      = input.float(2.0, title = "", inline = "Upper Deviation", group = "Channel Settings")
@@ -23,6 +23,7 @@ colorUpper          = input.color(color.new(color.blue, 85), title = "", inline 
 colorLower          = input.color(color.new(color.red, 85), title = "", inline = "Color Settings", group = "Color Settings")
 takeProfit          = input.float(0.618, minval = 0.382, maxval = 2.618, title = "TakeProfit", inline = "TP/SL Settings", group = "TP/SL Settings")
 stopLoss            = input.float(0.206, minval = 0.127, maxval = 0.872, title = "StopLoss", inline = "TP/SL Settings", group = "TP/SL Settings")
+sourceTPSL          = input.source(hlc3, title = "Source of TP/SL", group = "TP/SL Settings")
 
 // ##################
 // === Indicators ===
@@ -55,7 +56,11 @@ lowerStartPrice = startPrice - lowerMultInput * stdDev
 lowerEndPrice   = endPrice - lowerMultInput * stdDev
 widthChannel    = int(2 * upperMultInput * stdDev / syminfo.mintick)
 tpValue         = int(widthChannel*takeProfit)
+tpPriceLong     = int(sourceTPSL / syminfo.mintick + tpValue) * syminfo.mintick
+tpPriceShort    = int(sourceTPSL / syminfo.mintick - tpValue) * syminfo.mintick
 slValue         = int(widthChannel*stopLoss)
+slPriceLong     = int(sourceTPSL / syminfo.mintick - slValue) * syminfo.mintick
+slPriceShort    = int(sourceTPSL / syminfo.mintick + slValue) * syminfo.mintick
 
 // #############
 // === Plots ===
@@ -93,6 +98,28 @@ slopePlot  = plot(slope, precision = 4, color = color.black, editable = false, d
 widthPlot  = plot(widthChannel, precision = 0, color = color.black, editable = false, display = display.status_line)
 tpPlot     = plot(tpValue, precision = 0, color = color.green, editable = false, display = display.status_line)
 slPlot     = plot(slValue, precision = 0, color = color.blue, editable = false, display = display.status_line)
+// === Stoploss/Takeprofit ===
+
+
+labelTPShort = label.new(bar_index+20, tpPriceShort, text = 'TP Short ' + str.tostring(tpPriceShort), style = label.style_label_lower_left, color=color.purple, textcolor = color.white, tooltip = 'The takeprofit price for short position')
+label.delete(labelTPShort[1])
+lineTPShort  = line.new(bar_index, tpPriceShort, bar_index+20, tpPriceShort, color=color.purple, width=2)
+line.delete(lineTPShort[1])
+
+labeSLShort = label.new(bar_index+20, slPriceShort, text = 'SL Short ' + str.tostring(slPriceShort), style = label.style_label_lower_left, color=color.rgb(39, 162, 176), textcolor = color.white, tooltip = 'The stoploss price for short position')
+label.delete(labeSLShort[1])
+lineSLShort  = line.new(bar_index, slPriceShort, bar_index+20, slPriceShort, color=color.rgb(39, 162, 176), width=2)
+line.delete(lineSLShort[1])
+
+labelTPLong  = label.new(bar_index+10, tpPriceLong, text = 'TP Long ' + str.tostring(tpPriceLong),style = label.style_label_lower_left, color=color.green, textcolor = color.black, tooltip = 'The takeprofit price for long position')
+label.delete(labelTPLong[1])
+lineTPLong   = line.new(bar_index, tpPriceLong, bar_index+10, tpPriceLong, color=color.green, width=2)
+line.delete(lineTPLong[1])
+
+labelSLLong  = label.new(bar_index+10, slPriceLong, text = 'SL Long ' + str.tostring(slPriceLong),style = label.style_label_lower_left, color=color.red, textcolor = color.black, tooltip = 'The stoploss price for long position')
+label.delete(labelSLLong[1])
+lineSLLong   = line.new(bar_index, slPriceLong, bar_index+10, slPriceLong, color=color.red, width=2)
+line.delete(lineSLLong[1])
 
 // ##############
 // === Alerts ===

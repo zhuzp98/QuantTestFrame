@@ -2,7 +2,7 @@
 // © rhapsodyz
 
 //@version=5
-indicator(title     = "[Z] Many Divergence Alert", 
+indicator(title     = "Many Divergence Alert", 
      shorttitle     = "ManyDiv Alert", 
      overlay        = true,
      max_bars_back      = 1000, 
@@ -47,27 +47,6 @@ Cmfm    = ((close-low) - (high-close)) / (high - low), Cmfv = Cmfm * volume, cmf
 Mfi     = ta.mfi(close, 14) // Moneyt Flow Index
 [macd, signal, deltamacd] = ta.macd(close, 12, 26, 9) // MACD
 
-// keep indicators names and colors in arrays
-var indicators_name = array.new_string(11)
-var div_colors = array.new_color(4)
-if barstate.isfirst
-    // names
-    array.set(indicators_name, 0, showindis == "Full" ? "MACD" : "M")
-    array.set(indicators_name, 1, showindis == "Full" ? "Hist" : "H")
-    array.set(indicators_name, 2, showindis == "Full" ? "RSI" : "E")
-    array.set(indicators_name, 3, showindis == "Full" ? "Stoch" : "S")
-    array.set(indicators_name, 4, showindis == "Full" ? "CCI" : "C")
-    array.set(indicators_name, 5, showindis == "Full" ? "MOM" : "M")
-    array.set(indicators_name, 6, showindis == "Full" ? "OBV" : "O")
-    array.set(indicators_name, 7, showindis == "Full" ? "VWMACD" : "V")
-    array.set(indicators_name, 8, showindis == "Full" ? "CMF" : "C")
-    array.set(indicators_name, 9, showindis == "Full" ? "MFI" : "M")
-    array.set(indicators_name,10, showindis == "Full" ? "Extrn" : "X")
-    //colors
-    array.set(div_colors, 0, pos_reg_div_col)
-    array.set(div_colors, 1, neg_reg_div_col)
-    array.set(div_colors, 2, pos_hid_div_col)
-    array.set(div_colors, 3, neg_hid_div_col)
 
 // Check if we get new Pivot High Or Pivot Low
 float ph = ta.pivothigh((source == "Close" ? close : high), prd, prd)
@@ -239,8 +218,8 @@ alertcondition(neg_reg_div_detected or neg_hid_div_detected, title='Negative Div
 // #############
 // === Plots ===
 // #############
+
 seriesNeg = searchdiv == "Regular" ? neg_reg_div_detected : (searchdiv == "Hidden" ? neg_hid_div_detected : (neg_reg_div_detected or neg_hid_div_detected))
 seriesPos = searchdiv == "Regular" ? pos_reg_div_detected : (searchdiv == "Hidden" ? pos_hid_div_detected : (pos_reg_div_detected or pos_hid_div_detected))
-plotshape(seriesNeg,  title = "Down",  location=location.abovebar, color=color.rgb(241, 222, 15),  style=shape.labeldown, text="Down",  textcolor = color.black, display = display.pane)
-plotshape(seriesPos,  title = "Up",  location=location.belowbar, color=color.rgb(145, 222, 106), style=shape.labelup,   text="Up",  textcolor = color.black, display = display.pane)
-
+plotshape(seriesNeg,  title = "Down",  location=location.abovebar, color=color.rgb(241, 222, 15),  style=shape.circle,display = display.pane)
+plotshape(seriesPos,  title = "Up",  location=location.belowbar, color=color.rgb(145, 222, 106), style=shape.circle, display = display.pane)
