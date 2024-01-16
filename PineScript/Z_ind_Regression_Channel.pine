@@ -101,24 +101,60 @@ slPlot     = plot(slValue, precision = 0, color = color.blue, editable = false, 
 // === Stoploss/Takeprofit ===
 
 
-labelTPShort = label.new(bar_index+20, tpPriceShort, text = 'TP Short ' + str.tostring(tpPriceShort), style = label.style_label_lower_left, color=color.purple, textcolor = color.white, tooltip = 'The takeprofit price for short position')
+labelTPShort = label.new(bar_index+20, tpPriceShort, 
+     text       = 'TP Short ' + str.tostring(tpPriceShort), 
+     style      = label.style_label_lower_left, 
+     color      = color.purple, 
+     textcolor  = color.white, 
+     tooltip    = 'The takeprofit price for short position')
+
+lineTPShort  = line.new(bar_index, tpPriceShort, bar_index+20, tpPriceShort, 
+     color      = color.purple, 
+     width      = 2)
+
 label.delete(labelTPShort[1])
-lineTPShort  = line.new(bar_index, tpPriceShort, bar_index+20, tpPriceShort, color=color.purple, width=2)
 line.delete(lineTPShort[1])
 
-labeSLShort = label.new(bar_index+20, slPriceShort, text = 'SL Short ' + str.tostring(slPriceShort), style = label.style_label_lower_left, color=color.rgb(39, 162, 176), textcolor = color.white, tooltip = 'The stoploss price for short position')
+labeSLShort  = label.new(bar_index+20, slPriceShort, 
+     text       = 'SL Short ' + str.tostring(slPriceShort), 
+     style      = label.style_label_lower_left, 
+     color      = color.rgb(39, 162, 176), 
+     textcolor  = color.white, 
+     tooltip    = 'The stoploss price for short position')
+
+lineSLShort  = line.new(bar_index, slPriceShort, bar_index+20, slPriceShort, 
+     color      = color.rgb(39, 162, 176), 
+     width      = 2)
+
 label.delete(labeSLShort[1])
-lineSLShort  = line.new(bar_index, slPriceShort, bar_index+20, slPriceShort, color=color.rgb(39, 162, 176), width=2)
 line.delete(lineSLShort[1])
 
-labelTPLong  = label.new(bar_index+10, tpPriceLong, text = 'TP Long ' + str.tostring(tpPriceLong),style = label.style_label_lower_left, color=color.green, textcolor = color.black, tooltip = 'The takeprofit price for long position')
+labelTPLong  = label.new(bar_index+10, tpPriceLong, 
+     text       = 'TP Long ' + str.tostring(tpPriceLong),
+     style      = label.style_label_lower_left, 
+     color      = color.green, 
+     textcolor  = color.black, 
+     tooltip    = 'The takeprofit price for long position')
+
+lineTPLong   = line.new(bar_index, tpPriceLong, bar_index+10, tpPriceLong, 
+     color      = color.green, 
+     width      = 2)
+
 label.delete(labelTPLong[1])
-lineTPLong   = line.new(bar_index, tpPriceLong, bar_index+10, tpPriceLong, color=color.green, width=2)
 line.delete(lineTPLong[1])
 
-labelSLLong  = label.new(bar_index+10, slPriceLong, text = 'SL Long ' + str.tostring(slPriceLong),style = label.style_label_lower_left, color=color.red, textcolor = color.black, tooltip = 'The stoploss price for long position')
+labelSLLong  = label.new(bar_index+10, slPriceLong, 
+     text       = 'SL Long ' + str.tostring(slPriceLong),
+     style      = label.style_label_lower_left, 
+     color      = color.red, 
+     textcolor  = color.black, 
+     tooltip    = 'The stoploss price for long position')
+
+lineSLLong   = line.new(bar_index, slPriceLong, bar_index+10, slPriceLong, 
+     color=color.red, 
+     width=2)
+
 label.delete(labelSLLong[1])
-lineSLLong   = line.new(bar_index, slPriceLong, bar_index+10, slPriceLong, color=color.red, width=2)
 line.delete(lineSLLong[1])
 
 // ##############
