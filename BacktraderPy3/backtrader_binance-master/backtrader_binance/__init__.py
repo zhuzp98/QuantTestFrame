@@ -1,1 +1,1 @@
-from .binance_store import BinanceStore
+from binance_store import BinanceStore
