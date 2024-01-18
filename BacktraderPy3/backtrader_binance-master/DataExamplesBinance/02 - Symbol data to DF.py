@@ -62,7 +62,7 @@ if __name__ == '__main__':  # Entry point when running this script
     cerebro = bt.Cerebro(quicknotify=True)
 
     coin_target = 'USDT'  # the base ticker in which calculations will be performed
-    symbol = 'BTC' + coin_target  # the ticker by which we will receive data in the format <CodeTickerBaseTicker>
+    symbol = 'ETH' + coin_target  # the ticker by which we will receive data in the format <CodeTickerBaseTicker>
 
     store = BinanceStore(
         api_key=Config.BINANCE_API_KEY,
