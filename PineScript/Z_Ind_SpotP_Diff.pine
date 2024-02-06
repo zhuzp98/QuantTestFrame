@@ -1,0 +1,35 @@
+// This work is licensed under a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) https://creativecommons.org/licenses/by-nc-sa/4.0/
+// © rhapsodyz
+
+//@version=5
+indicator(title     = "[Z] Difference between Spot and Perpetual", 
+     shorttitle     = "Diff SpotP", 
+     overlay        = false, 
+     format         = format.inherit,
+     precision      = 2,
+     timeframe      = timeframe.period, 
+     timeframe_gaps = true)
+
+// ##################
+// === Parameters ===
+// ##################
+
+symbolCompare   = input.symbol(defval = "BINANCE:BTCUSDT", title = "Symbol to Compare", tooltip = "Choose the symbol you would like to create the difference with the chartting one.", inline = " ", group = "Basic Settings", display = display.all)
+symbolClose     = request.security(symbol = symbolCompare, timeframe = timeframe.period, expression = close)
+
+// ##################
+// === Indicators ===
+// ##################
+closeDiff = close - symbolClose
+
+
+// ##############
+// === Alerts ===
+// ##############
+
+
+
+// #############
+// === Plots ===
+// #############
+diffPlot = plot(series = closeDiff, title = "Price Difference", color = color.new(color = color.blue , transp = 0), linewidth = 1)
