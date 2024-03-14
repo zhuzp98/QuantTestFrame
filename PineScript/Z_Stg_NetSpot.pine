@@ -1,0 +1,89 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © rhapsodyz
+
+//@version=5
+strategy(title = "Spot Net Strategy", 
+     overlay = true, 
+     pyramiding = 0, 
+     initial_capital = 100000,
+     default_qty_type= strategy.percent_of_equity, 
+     default_qty_value = 100, 
+     commission_type = strategy.commission.percent, 
+     commission_value = 0.1, 
+     slippage = 1)
+
+// #######################
+// === General Numbers ===
+// #######################
+
+// === Equity Usage ===
+equityUsage = input(1.0, title="Equity Usage Percentage")
+_qty = (strategy.equity * equityUsage) / close
+
+// === Input A ===
+
+
+// === Input B ===
+
+
+// === Input C ===
+
+
+// ##################
+// === Indicators ===
+// ##################
+
+// === Indicator A ===
+
+
+// === Indicator B ===
+
+
+// === Indicator C ===
+
+
+// ##################
+// === Conditions ===
+// ##################
+
+// === Condition A ===
+enterLong = close == 0.998
+enterShort = close == 1.004
+
+// === Condition B ===
+
+
+// === Condition C ===
+
+
+// #######################
+// === Risk Management ===
+// #######################
+
+// === Stop-loss ===
+stopLoss   = input(3, "Stop Loss")
+var float stopLossPrice = na
+
+// === Take-profit ===
+takeProfit = input(30, "Take Profit")
+var float takeProfitPrice = na
+
+// #######################
+// === Order Execution ===
+// #######################
+
+// === Execute long entry ===
+if enterLong
+    strategy.entry("Long", strategy.long, qty = _qty)
+
+// === Execute long exit ===
+if enterShort
+    strategy.close("Long", qty_percent=100)
+
+// === Execute short entry ===
+if enterShort
+    strategy.entry("Short", strategy.short, qty = _qty)
+
+// === Execute short exit ===
+if enterLong
+    strategy.close("Short", qty_percent = 100)

@@ -1,0 +1,42 @@
+// This work is licensed under a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) https://creativecommons.org/licenses/by-nc-sa/4.0/
+// © rhapsodyz
+
+//@version=5
+indicator(title     = "[Z] Historical Volatility Ratio To BTC", 
+     shorttitle     = "HV:BTC", 
+     format         = format.price, 
+     precision      = 2, 
+     timeframe      = "", 
+     timeframe_gaps = true)
+
+// ##################
+// === Parameters ===
+// ##################
+
+
+length      = input.int(10, minval = 1, title = "Length", group = "HV settings")
+lengthEMA   = input.int(100, minval = 1, maxval = 4999, title = "EMA Length", group = "HV settings")
+src         = input.source(hlc3, title = "HV Source", group = "HV settings")
+multBoll    = input.float(2.0, minval=0.001, maxval=50, title="Boll StdDev", group="Boll Settings")
+
+BTCsym      = input.symbol(defval = "BINANCE:BTCUSDT.P", title = "Base Coin (Perpetual)", tooltip = "Choose the symbol for Base Volatility.", inline = " ", group = "Basic Settings", display = display.all)
+BTCsrc      = request.security(symbol = BTCsym, timeframe = timeframe.period, expression = src)
+
+// ##################
+// === Indicators ===
+// ##################
+
+annual  = 365
+per     = timeframe.isintraday or timeframe.isdaily and timeframe.multiplier == 1 ? 1 : 7
+
+
+hv = 100 * ta.stdev(math.log(src / src[1]), length) * math.sqrt(annual / per)
+BTChv = 100 * ta.stdev(math.log(BTCsrc / BTCsrc[1]), length) * math.sqrt(annual / per)
+
+hvRatio = hv / BTChv
+
+hvRatioPlot = plot(hvRatio, "HVR", color = color.blue)
+
+// midLinePlot = plot(0, color = na, editable = false, display = display.none)
+// fill(hvDivPlot, midLinePlot, 1.2, 0.8, top_color = color.new(color.green, 0), bottom_color = color.new(color.green, 100),  title = "Overbought Gradient Fill")
+// fill(hvDivPlot, midLinePlot, -0.8,  -1.2,  top_color = color.new(color.red, 100), bottom_color = color.new(color.red, 0),      title = "Oversold Gradient Fill")

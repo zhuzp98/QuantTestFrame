@@ -1,0 +1,41 @@
+// This work is licensed under a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) https://creativecommons.org/licenses/by-nc-sa/4.0/
+// © rhapsodyz
+
+//@version=5
+indicator(title     = "[Z] Coin to CNY", 
+     shorttitle     = "Coin/CNY", 
+     overlay        = false, 
+     format         = format.inherit,
+     precision      = 2)
+
+// ##################
+// === Parameters ===
+// ##################
+
+USDCNYsym       = input.symbol(defval = "ICE:USDCNY", title = "Currency Pair", tooltip = "Choose the symbol you would like to create the currency pair translation.", inline = " ", group = "Basic Settings", display = display.all)
+USDCNYClose     = request.security(symbol = USDCNYsym, timeframe = timeframe.period, expression = close)
+USDCNYHigh      = request.security(symbol = USDCNYsym, timeframe = timeframe.period, expression = high)
+USDCNYLow       = request.security(symbol = USDCNYsym, timeframe = timeframe.period, expression = low)
+USDCNYOpen      = request.security(symbol = USDCNYsym, timeframe = timeframe.period, expression = open)
+
+// ##################
+// === Indicators ===
+// ##################
+
+CoinCNYClose    = close * USDCNYClose 
+CoinCNYOpen     = open * USDCNYOpen
+CoinCNYLow      = low * USDCNYLow
+CoinCNYHigh     = high * USDCNYHigh
+
+
+// ##############
+// === Alerts ===
+// ##############
+
+
+
+// #############
+// === Plots ===
+// #############
+
+plotcandle(CoinCNYOpen, CoinCNYHigh, CoinCNYLow, CoinCNYClose)
