@@ -1,0 +1,38 @@
+// This work is licensed under a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) https://creativecommons.org/licenses/by-nc-sa/4.0/
+// © rhapsodyz
+
+//@version=5
+indicator(title     = "[Z] ATR Ratio To BTC", 
+     shorttitle     = "ATR:BTC", 
+     format         = format.price, 
+     precision      = 2, 
+     timeframe      = "", 
+     timeframe_gaps = true)
+
+// ##################
+// === Parameters ===
+// ##################
+
+atrLength = input.int(title="Length", defval=14, minval=1)
+
+src         = input.source(hlc3, title = "HV Source", group = "HV settings")
+multBoll    = input.float(2.0, minval=0.001, maxval=50, title="Boll StdDev", group="Boll Settings")
+
+BTCsym      = input.symbol(defval = "BINANCE:BTCUSDT.P", title = "Base Coin (Perpetual)", tooltip = "Choose the symbol for Base Volatility.", inline = " ", group = "Basic Settings", display = display.all)
+BTCsrc      = request.security(symbol = BTCsym, timeframe = timeframe.period, expression = src)
+
+// ##################
+// === Indicators ===
+// ##################
+
+atr = ta.atr(length = atrLength)
+atrP = atr/ta.ema(source = src, length = atrLength)
+atrBTC = request.security(symbol = BTCsym, timeframe = timeframe.period, expression = ta.atr(length = atrLength))
+atrBTCP = atrBTC/request.security(symbol = BTCsym, timeframe = timeframe.period, expression = ta.ema(length = atrLength))
+atrRatio = atrP/atrBTCP
+
+atrRatioPlot = plot(atrRatio, "ATR Ratio", color = color.blue)
+
+// midLinePlot = plot(0, color = na, editable = false, display = display.none)
+// fill(hvDivPlot, midLinePlot, 1.2, 0.8, top_color = color.new(color.green, 0), bottom_color = color.new(color.green, 100),  title = "Overbought Gradient Fill")
+// fill(hvDivPlot, midLinePlot, -0.8,  -1.2,  top_color = color.new(color.red, 100), bottom_color = color.new(color.red, 0),      title = "Oversold Gradient Fill")

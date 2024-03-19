@@ -1,0 +1,37 @@
+// This work is licensed under a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) https://creativecommons.org/licenses/by-nc-sa/4.0/
+// © rhapsodyz
+
+//@version=5
+indicator(title     = "[Z] Expected Price with BTC Pair", 
+     shorttitle     = "ExP w/ Pair", 
+     overlay        = true, 
+     format         = format.inherit,
+     precision      = 2,
+     timeframe      = timeframe.period, 
+     timeframe_gaps = true)
+
+// ##################
+// === Parameters ===
+// ##################
+
+src         = input.source(hlc3, title = "Price Source", group = "Basic Settings")
+BTCsym      = input.symbol(defval = "CRYPTO:BTCUSD", title = "Base BTCUSD", tooltip = "Choose the symbol for Base Coin for pair.", inline = " ", group = "Basic Settings", display = display.all)
+BTCsrc      = request.security(symbol = BTCsym, timeframe = timeframe.period, expression = src)
+
+// ##################
+// === Indicators ===
+// ##################
+
+expPrice    = BTCsrc * src
+
+// ##############
+// === Alerts ===
+// ##############
+
+
+
+// #############
+// === Plots ===
+// #############
+
+exPPlot     = plot(series = expPrice, title = "Expected Price", display = display.status_line)
