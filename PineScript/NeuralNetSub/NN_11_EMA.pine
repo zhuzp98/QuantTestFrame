@@ -1,0 +1,53 @@
+// This work is licensed under a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) https://creativecommons.org/licenses/by-nc-sa/4.0/
+// © rhapsodyz
+
+//@version=5
+indicator(title     = "[Z] Neural Network Sub 11 - Trend - EMA", 
+     shorttitle     = "N_EMA", 
+     overlay        = true, 
+     format         = format.inherit,
+     precision      = 2)
+
+price = plot(close, title="Close Line", color=color.blue, display=display.none)
+
+//EMA
+tttradetrend = "Only place BUY or SELL orders with the direction of the Trend EMA."
+tradetrendoption = input.bool(false, title="Only Tade with Trend", tooltip=tttradetrend)
+len111 = input.int(defval=200, minval=0, maxval=2000, title="Trend EMA Length")
+src111 = close
+out111 = ta.ema(src111, len111)
+ma111  = plot(out111, title="EMA 200", linewidth=2, color=color.blue, offset=0)
+mabuy  = out111 > out111[1]
+masell = out111 < out111[1]
+
+//5 EMAs////////////////////////////////////////////////////////////////////////
+len1 = 9
+src1 = close
+out1 = ta.ema(src1, len1)
+ema1color = (out1 > out1[1] ? #00bcd4 : #e91e63)
+ema1 = plot(out1, title="EMA 9", linewidth=3, color=color.new(ema1color, 50), offset=0, display=display.none)
+fill(price, ema1, title="EMA 9 Fill", color=color.new(ema1color, 90), editable=true)
+len2 = 21
+src2 = close
+out2 = ta.ema(src2, len2)
+ema2color = (out2 > out2[1] ? #00bcd4 : #e91e63)
+ema2 = plot(out2, title="EMA 21", linewidth=3, color=color.new(ema2color, 50), offset=0, display=display.none)
+fill(price, ema2, title="EMA 21 Fill", color=color.new(ema2color, 90), editable=true)
+len3 = 55
+src3 = close
+out3 = ta.ema(src3, len3)
+ema3color = (out3 > out3[1] ? #00bcd4 : #e91e63)
+ema3 = plot(out3, title="EMA 55", linewidth=3, color=color.new(ema3color, 50), offset=0, display=display.none)
+fill(price, ema3, title="EMA 55 Fill", color=color.new(ema3color, 90), editable=true)
+len4 = 100
+src4 = close
+out4 = ta.ema(src4, len4)
+ema4color = (out4 > out4[1] ? #00bcd4 : #e91e63)
+ema4 = plot(out4, title="EMA 100", linewidth=3, color=color.new(ema4color, 50), offset=0, display=display.none)
+fill(price, ema4, title="EMA 100 Fill", color=color.new(ema4color, 90), editable=true)
+len5 = 200
+src5 = close
+out5 = ta.ema(src5, len5)
+ema5color = (out5 > out5[1] ? #00bcd4 : #e91e63)
+ema5 = plot(out5, title="EMA 200", linewidth=3, color=color.new(ema5color, 50), offset=0, display=display.none)
+fill(price, ema5, title="EMA 200 Fill", color=color.new(ema5color, 90), editable=true)

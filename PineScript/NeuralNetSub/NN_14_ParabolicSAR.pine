@@ -1,0 +1,16 @@
+// This work is licensed under a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) https://creativecommons.org/licenses/by-nc-sa/4.0/
+// © rhapsodyz
+
+//@version=5
+indicator(title     = "[Z] Neural Network Sub 14 - Trend - ParabolicSAR", 
+     shorttitle     = "N_ParabolicSAR", 
+     overlay        = true, 
+     format         = format.inherit,
+     precision      = 2)
+
+//Parabolic SAR
+start = 0.02
+increment = 0.01
+maximum = 0.2
+psar = ta.sar(start, increment, maximum)
+plot(psar, "ParabolicSAR", style=plot.style_circles, color=#ffffff)

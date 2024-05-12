@@ -1,0 +1,29 @@
+// This work is licensed under a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) https://creativecommons.org/licenses/by-nc-sa/4.0/
+// © rhapsodyz
+
+//@version=5
+indicator(title     = "[Z] Neural Network Sub 12 - Trend - SuperTrend", 
+     shorttitle     = "N_SuperTrend", 
+     overlay        = true, 
+     format         = format.inherit,
+     precision      = 2)
+     
+//Supertrend
+atrPeriod = 10
+factor = 3
+
+[supertrend, direction] = ta.supertrend(factor, atrPeriod)
+
+supertrend := barstate.isfirst ? na : supertrend
+upTrend =    plot(direction < 0 ? supertrend : na, "Up Trend",   color = color.green, style = plot.style_linebr)
+downTrend =  plot(direction < 0 ? na : supertrend, "Down Trend", color = color.red,   style = plot.style_linebr)
+bodyMiddle = plot(barstate.isfirst ? na : (open + close) / 2, "Body Middle",display = display.none)
+fill(bodyMiddle, upTrend,   color.new(color.green, 90), fillgaps = false)
+fill(bodyMiddle, downTrend, color.new(color.red,   90), fillgaps = false)
+
+uptrend = direction < 0 and direction[1] > 0[1] ? supertrend : na
+downtrend = direction > 0 and direction[1] < 0[1] ? supertrend : na
+bullishsupertrend = supertrend < close and supertrend[1] > close
+bearishsupertrend = supertrend > close and supertrend[1] < close
+plotshape(uptrend, style=shape.labelup, color=color.green, location=location.belowbar, size=size.large)
+plotshape(downtrend, style=shape.labeldown, color=color.red, location=location.abovebar, size=size.large)

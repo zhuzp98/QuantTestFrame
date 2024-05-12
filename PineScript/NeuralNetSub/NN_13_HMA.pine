@@ -1,0 +1,16 @@
+// This work is licensed under a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) https://creativecommons.org/licenses/by-nc-sa/4.0/
+// © rhapsodyz
+
+//@version=5
+indicator(title     = "[Z] Neural Network Sub 13 - Trend - HMA", 
+     shorttitle     = "N_HMA", 
+     overlay        = true, 
+     format         = format.inherit,
+     precision      = 2)
+
+//HMA
+len6 = 100
+src6 = close
+hma = ta.wma(2*ta.wma(src6, len6/2)-ta.wma(src6, len6), math.floor(math.sqrt(len6)))
+hmacolor = close > hma ? #00bcd4 : #e91e63
+plot(hma, title="HMA Line", color=color.new(hmacolor, 25), linewidth=5)

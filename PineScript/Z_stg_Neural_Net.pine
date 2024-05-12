@@ -1,6 +1,6 @@
 //@version=5
 strategy(title          = "[Z] Neural Network", 
-     shorttitle         = "Nerual",
+     shorttitle         = "Neural",
      overlay            = true, 
      initial_capital    = 1000, 
      default_qty_type   = strategy.percent_of_equity, 
