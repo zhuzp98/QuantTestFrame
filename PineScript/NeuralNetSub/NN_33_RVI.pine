@@ -1,0 +1,98 @@
+// This work is licensed under a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) https://creativecommons.org/licenses/by-nc-sa/4.0/
+// © rhapsodyz
+
+//@version=5
+indicator(title     = "[Z] Neural Network Sub 33 - Volatility - Relative Volatility Index", 
+     shorttitle     = "N_RVI", 
+     overlay        = false, 
+     format         = format.inherit,
+     precision      = 2)
+
+
+//Relative Volatility Index Divergence//////////////////////////////////////////
+length15 = 12
+src15 = close
+len15 = 14
+stddev15 = ta.stdev(src15, length15)
+upper15 = ta.ema(ta.change(src15) <= 0 ? 0 : stddev15, len15)
+lower15 = ta.ema(ta.change(src15) > 0 ? 0 : stddev15, len15)
+rvi = upper15 / (upper15 + lower15) * 100
+h0 = hline(80, "Upper Band", color=#787B86)
+h1 = hline(20, "Lower Band", color=#787B86)
+fill(h0, h1, color=color.rgb(126, 87, 194, 90), title="Background")
+plot(rvi15, title="RVI", color=#7E57C2, offset = offset)
+
+//Divergence
+lbR15 = 2
+lbL15 = 6
+rangeUpper15 = 60
+rangeLower15 = 5
+plotBull15 = true
+plotHiddenBull15 = false
+plotBear15 = true
+plotHiddenBear15 = false
+
+bearColor15 = color.red
+bullColor15 = color.green
+hiddenBullColor15 = color.green
+hiddenBearColor15 = color.red
+textColor15 = color.white
+noneColor15 = color.new(color.white, 100)
+
+d15 = rvi
+osc15 = d15
+
+plFound15 = na(ta.pivotlow(osc15, lbL15, lbR15)) ? false : true
+phFound15 = na(ta.pivothigh(osc15, lbL15, lbR15)) ? false : true
+
+_inRange15(cond) =>
+    bars15 = ta.barssince(cond == true)
+    rangeLower15 <= bars15 and bars15 <= rangeUpper15
+
+//Regular Bullish
+
+//Osc: Higher Low
+oscHL15 = osc15[lbR15] > ta.valuewhen(plFound15, osc15[lbR15], 1) and _inRange15(plFound15[1])
+
+//Price: Lower Low
+priceLL15 = low[lbR15] < ta.valuewhen(plFound15, low[lbR15], 1)
+
+bullCond15 = plotBull15 and priceLL15 and oscHL15 and plFound15
+plot(plFound15 ? osc15[lbR15] : na, offset=-lbR15, title="Regular Bullish", linewidth=2, color=(bullCond15 ? bullColor15 : noneColor15))
+plotshape(bullCond15 ? osc15[lbR15] : na, offset=-lbR15, title="Regular Bullish Label", text=" Bull ", style=shape.labelup, location=location.absolute, color=bullColor15, textcolor=textColor15)
+
+//Hidden Bullish
+
+//Osc: Lower Low
+oscLL15 = osc15[lbR15] < ta.valuewhen(plFound15, osc15[lbR15], 1) and _inRange15(plFound15[1])
+
+//Price: Higher Low
+priceHL15 = low[lbR15] > ta.valuewhen(plFound15, low[lbR15], 1)
+
+hiddenBullCond15 = plotHiddenBull15 and priceHL15 and oscLL15 and plFound15
+//plot(plFound15 ? osc15[lbR15] : na, offset=-lbR15, title="Hidden Bullish", linewidth=2, color=(hiddenBullCond15 ? hiddenBullColor15 : noneColor15))
+//plotshape(hiddenBullCond15 ? osc15[lbR15] : na, offset=-lbR15, title="Hidden Bullish Label", text=" H Bull ", style=shape.labelup, location=location.absolute, color=bullColor15, textcolor=textColor15)
+	 
+//Regular Bearish
+
+//Osc: Lower High
+oscLH15 = osc15[lbR15] < ta.valuewhen(phFound15, osc15[lbR15], 1) and _inRange15(phFound15[1])
+
+//Price: Higher High
+priceHH15 = high[lbR15] > ta.valuewhen(phFound15, high[lbR15], 1)
+
+bearCond15 = plotBear15 and priceHH15 and oscLH15 and phFound15
+plot(phFound15 ? osc15[lbR15] : na, offset=-lbR15, title="Regular Bearish", linewidth=2, color=(bearCond15 ? bearColor15 : noneColor15))
+plotshape(bearCond15 ? osc15[lbR15] : na, offset=-lbR15, title="Regular Bearish Label", text=" Bear ", style=shape.labeldown, location=location.absolute, color=bearColor15, textcolor=textColor15)
+
+//Hidden Bearish
+
+//Osc: Higher High
+oscHH15 = osc15[lbR15] > ta.valuewhen(phFound15, osc15[lbR15], 1) and _inRange15(phFound15[1])
+
+//Price: Lower High
+priceLH15 = high[lbR15] < ta.valuewhen(phFound15, high[lbR15], 1)
+
+hiddenBearCond15 = plotHiddenBear15 and priceLH15 and oscHH15 and phFound15
+//plot(phFound15 ? osc15[lbR15] : na, offset=-lbR15, title="Hidden Bearish", linewidth=2, color=(hiddenBearCond15 ? hiddenBearColor15 : noneColor15))
+//plotshape(hiddenBearCond15 ? osc15[lbR15] : na, offset=-lbR15, title="Hidden Bearish Label", text=" H Bear ", style=shape.labeldown, location=location.absolute, color=bearColor15, textcolor=textColor15)

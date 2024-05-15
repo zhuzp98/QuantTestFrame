@@ -1,0 +1,38 @@
+// This work is licensed under a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) https://creativecommons.org/licenses/by-nc-sa/4.0/
+// © rhapsodyz
+
+//@version=5
+indicator(title     = "[Z] Neural Network Sub 32 - Volatility - ATR", 
+     shorttitle     = "N_ATR", 
+     overlay        = false, 
+     format         = format.inherit,
+     precision      = 2)
+     
+//Average True Range 
+length2 = 1
+mult2 = 1.85
+showLabels = true
+useClose = false
+highlightState = false
+
+atr = mult2 * ta.atr(length2)
+
+longStop = (useClose ? ta.highest(close, length2) : ta.highest(length2)) - atr
+longStopPrev = nz(longStop[1], longStop) 
+longStop := close[1] > longStopPrev ? math.max(longStop, longStopPrev) : longStop
+
+shortStop = (useClose ? ta.lowest(close, length2) : ta.lowest(length2)) + atr
+shortStopPrev = nz(shortStop[1], shortStop)
+shortStop := close[1] < shortStopPrev ? math.min(shortStop, shortStopPrev) : shortStop
+
+var int dir = 1
+dir := close > shortStopPrev ? 1 : close < longStopPrev ? -1 : dir
+
+var color longColor = color.green
+var color shortColor = color.red
+
+buySignal = dir == 1 and dir[1] == -1
+plotshape(buySignal and showLabels ? longStop : na, title="Gold Buy", text="Buy", location=location.belowbar, style=shape.labelup, size=size.tiny, color=longColor, textcolor=color.new(color.white, 0))
+
+sellSignal = dir == -1 and dir[1] == 1
+plotshape(sellSignal and showLabels ? shortStop : na, title="Gold Sell", text="Sell", location=location.abovebar, style=shape.labeldown, size=size.tiny, color=shortColor, textcolor=color.new(color.white, 0))

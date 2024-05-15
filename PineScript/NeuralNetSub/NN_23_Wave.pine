@@ -1,0 +1,102 @@
+// This work is licensed under a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) https://creativecommons.org/licenses/by-nc-sa/4.0/
+// © rhapsodyz
+
+//@version=5
+indicator(title     = "[Z] Neural Network Sub 23 - Momentum - Wave", 
+     shorttitle     = "N_Wave", 
+     overlay        = false, 
+     format         = format.inherit,
+     precision      = 2)
+
+//Wave Trend Divergence
+n1 = 9
+n2 = 12
+ap = hlc3 
+esa = ta.ema(ap, n1)
+d1 = ta.ema(math.abs(ap - esa), n1)
+ci = (ap - esa) / (0.015 * d1)
+tci = ta.ema(ci, n2)
+hline = 0
+wt1 = tci
+wt2 = ta.sma(wt1, 4)
+
+plot(hline, color=color.gray)
+plot(wt1, color=color.white)
+plot(wt2, color=color.blue)
+
+
+//Divergence
+lbR13 = 2
+lbL13 = 6
+rangeUpper13 = 60
+rangeLower13 = 5
+plotBull13 = true
+plotHiddenBull13 = false
+plotBear13 = true
+plotHiddenBear13 = false
+
+bearColor13 = color.red
+bullColor13 = color.green
+hiddenBullColor13 = color.green
+hiddenBearColor13 = color.red
+textColor13 = color.white
+noneColor13 = color.new(color.white, 100)
+
+k13 = wt1
+d13 = wt2
+osc13 = k13
+
+plFound13 = na(ta.pivotlow(osc13, lbL13, lbR13)) ? false : true
+phFound13 = na(ta.pivothigh(osc13, lbL13, lbR13)) ? false : true
+
+_inRange13(cond) =>
+    bars13 = ta.barssince(cond == true)
+    rangeLower13 <= bars13 and bars13 <= rangeUpper13
+
+//Regular Bullish
+
+//Osc: Higher Low
+oscHL13 = osc13[lbR13] > ta.valuewhen(plFound13, osc13[lbR13], 1) and _inRange13(plFound13[1])
+
+//Price: Lower Low
+priceLL13 = low[lbR13] < ta.valuewhen(plFound13, low[lbR13], 1)
+
+bullCond13 = plotBull13 and priceLL13 and oscHL13 and plFound13
+plot(plFound13 ? osc13[lbR13] : na, offset=-lbR13, title="Regular Bullish", linewidth=2, color=(bullCond13 ? bullColor13 : noneColor13))
+plotshape(bullCond13 ? osc13[lbR13] : na, offset=-lbR13, title="Regular Bullish Label", text=" Bull ", style=shape.labelup, location=location.absolute, color=bullColor13, textcolor=textColor13)
+
+//Hidden Bullish
+
+//Osc: Lower Low
+oscLL13 = osc13[lbR13] < ta.valuewhen(plFound13, osc13[lbR13], 1) and _inRange13(plFound13[1])
+
+//Price: Higher Low
+priceHL13 = low[lbR13] > ta.valuewhen(plFound13, low[lbR13], 1)
+
+hiddenBullCond13 = plotHiddenBull13 and priceHL13 and oscLL13 and plFound13
+//plot(plFound13 ? osc13[lbR13] : na, offset=-lbR13, title="Hidden Bullish", linewidth=2, color=(hiddenBullCond13 ? hiddenBullColor13 : noneColor13))
+//plotshape(hiddenBullCond13 ? osc13[lbR13] : na, offset=-lbR13, title="Hidden Bullish Label", text=" H Bull ", style=shape.labelup, location=location.absolute, color=bullColor13, textcolor=textColor13)
+	 
+//Regular Bearish
+
+//Osc: Lower High
+oscLH13 = osc13[lbR13] < ta.valuewhen(phFound13, osc13[lbR13], 1) and _inRange13(phFound13[1])
+
+//Price: Higher High
+priceHH13 = high[lbR13] > ta.valuewhen(phFound13, high[lbR13], 1)
+
+bearCond13 = plotBear13 and priceHH13 and oscLH13 and phFound13
+plot(phFound13 ? osc13[lbR13] : na, offset=-lbR13, title="Regular Bearish", linewidth=2, color=(bearCond13 ? bearColor13 : noneColor13))
+plotshape(bearCond13 ? osc13[lbR13] : na, offset=-lbR13, title="Regular Bearish Label", text=" Bear ", style=shape.labeldown, location=location.absolute, color=bearColor13, textcolor=textColor13)
+
+//Hidden Bearish
+
+//Osc: Higher High
+oscHH13 = osc13[lbR13] > ta.valuewhen(phFound13, osc13[lbR13], 1) and _inRange13(phFound13[1])
+
+//Price: Lower High
+priceLH13 = high[lbR13] < ta.valuewhen(phFound13, high[lbR13], 1)
+
+hiddenBearCond13 = plotHiddenBear13 and priceLH13 and oscHH13 and phFound13
+//plot(phFound13 ? osc13[lbR13] : na, offset=-lbR13, title="Hidden Bearish", linewidth=2, color=(hiddenBearCond13 ? hiddenBearColor13 : noneColor13))
+//plotshape(hiddenBearCond13 ? osc13[lbR13] : na, offset=-lbR13, title="Hidden Bearish Label", text=" H Bear ", style=shape.labeldown, location=location.absolute, color=bearColor13, textcolor=textColor13)

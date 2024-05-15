@@ -1,0 +1,95 @@
+// This work is licensed under a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) https://creativecommons.org/licenses/by-nc-sa/4.0/
+// © rhapsodyz
+
+//@version=5
+indicator(title     = "[Z] Neural Network Sub 24 - Momentum - Stochastic", 
+     shorttitle     = "N_Stochastic", 
+     overlay        = false, 
+     format         = format.inherit,
+     precision      = 2)
+     
+//Stochastic Divergence/////////////////////////////////////////////////////////
+periodK14 = 14
+smoothK14 = 3
+periodD14 = 3
+k14 = ta.sma(ta.stoch(close, high, low, periodK14), smoothK14)
+d14 = ta.sma(k14, periodD14)
+//plot(k14, title="%K", color=#2962FF)
+//plot(d14, title="%D", color=#FF6D00)
+//h0 = hline(80, "Upper Band", color=#787B86)
+//h1 = hline(20, "Lower Band", color=#787B86)
+//fill(h0, h1, color=color.rgb(33, 150, 243, 90), title="Background")
+
+//Divergence
+lbR14 = 2
+lbL14 = 6
+rangeUpper14 = 60
+rangeLower14 = 5
+plotBull14 = true
+plotHiddenBull14 = false
+plotBear14 = true
+plotHiddenBear14 = false
+
+bearColor14 = color.red
+bullColor14 = color.green
+hiddenBullColor14 = color.green
+hiddenBearColor14 = color.red
+textColor14 = color.white
+noneColor14 = color.new(color.white, 100)
+
+osc14 = k14
+
+plFound14 = na(ta.pivotlow(osc14, lbL14, lbR14)) ? false : true
+phFound14 = na(ta.pivothigh(osc14, lbL14, lbR14)) ? false : true
+
+_inRange14(cond) =>
+    bars14 = ta.barssince(cond == true)
+    rangeLower14 <= bars14 and bars14 <= rangeUpper14
+
+//Regular Bullish
+
+//Osc: Higher Low
+oscHL14 = osc14[lbR14] > ta.valuewhen(plFound14, osc14[lbR14], 1) and _inRange14(plFound14[1])
+
+//Price: Lower Low
+priceLL14 = low[lbR14] < ta.valuewhen(plFound14, low[lbR14], 1)
+
+bullCond14 = plotBull14 and priceLL14 and oscHL14 and plFound14
+//plot(plFound14 ? osc14[lbR14] : na, offset=-lbR14, title="Regular Bullish", linewidth=2, color=(bullCond14 ? bullColor14 : noneColor14))
+//plotshape(bullCond14 ? osc14[lbR14] : na, offset=-lbR14, title="Regular Bullish Label", text=" Bull ", style=shape.labelup, location=location.absolute, color=bullColor14, textcolor=textColor14)
+
+//Hidden Bullish
+
+//Osc: Lower Low
+oscLL14 = osc14[lbR14] < ta.valuewhen(plFound14, osc14[lbR14], 1) and _inRange14(plFound14[1])
+
+//Price: Higher Low
+priceHL14 = low[lbR14] > ta.valuewhen(plFound14, low[lbR14], 1)
+
+hiddenBullCond14 = plotHiddenBull14 and priceHL14 and oscLL14 and plFound14
+//plot(plFound14 ? osc14[lbR14] : na, offset=-lbR14, title="Hidden Bullish", linewidth=2, color=(hiddenBullCond14 ? hiddenBullColor14 : noneColor14))
+//plotshape(hiddenBullCond14 ? osc14[lbR14] : na, offset=-lbR14, title="Hidden Bullish Label", text=" H Bull ", style=shape.labelup, location=location.absolute, color=bullColor14, textcolor=textColor14)
+
+//Regular Bearish
+
+//Osc: Lower High
+oscLH14 = osc14[lbR14] < ta.valuewhen(phFound14, osc14[lbR14], 1) and _inRange14(phFound14[1])
+
+//Price: Higher High
+priceHH14 = high[lbR14] > ta.valuewhen(phFound14, high[lbR14], 1)
+
+bearCond14 = plotBear14 and priceHH14 and oscLH14 and phFound14
+//plot(phFound14 ? osc14[lbR14] : na, offset=-lbR14, title="Regular Bearish", linewidth=2, color=(bearCond14 ? bearColor14 : noneColor14))
+//plotshape(bearCond14 ? osc14[lbR14] : na, offset=-lbR14, title="Regular Bearish Label", text=" Bear ", style=shape.labeldown, location=location.absolute, color=bearColor14, textcolor=textColor14)
+	 
+//Hidden Bearish
+
+//Osc: Higher High
+oscHH14 = osc14[lbR14] > ta.valuewhen(phFound14, osc14[lbR14], 1) and _inRange14(phFound14[1])
+
+//Price: Lower High
+priceLH14 = high[lbR14] < ta.valuewhen(phFound14, high[lbR14], 1)
+
+hiddenBearCond14 = plotHiddenBear14 and priceLH14 and oscHH14 and phFound14
+//plot(phFound14 ? osc14[lbR14] : na, offset=-lbR14, title="Hidden Bearish", linewidth=2, color=(hiddenBearCond14 ? hiddenBearColor14 : noneColor14))
+//plotshape(hiddenBearCond14 ? osc14[lbR14] : na, offset=-lbR14, title="Hidden Bearish Label", text=" H Bear ", style=shape.labeldown, location=location.absolute, color=bearColor14, textcolor=textColor14)

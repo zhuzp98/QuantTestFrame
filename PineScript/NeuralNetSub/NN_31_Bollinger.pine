@@ -1,0 +1,31 @@
+// This work is licensed under a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) https://creativecommons.org/licenses/by-nc-sa/4.0/
+// © rhapsodyz
+
+//@version=5
+indicator(title     = "[Z] Neural Network Sub 31 - Volatility - Bollinger", 
+     shorttitle     = "N_Bollinger", 
+     overlay        = false, 
+     format         = format.inherit,
+     precision      = 2)
+     
+//Bollinger Bands
+length1 = 20
+src7 = close
+mult1 = 2.0
+basis = ta.sma(src7, length1)
+dev = mult1 * ta.stdev(src7, length1)
+upper = basis + dev
+lower = basis - dev
+offset = 0
+plot(basis, "Basis", color=#FF6D00, offset = offset)
+p1 = plot(upper, "Upper", color=#2962FF, offset = 0)
+p2 = plot(lower, "Lower", color=#2962FF, offset = 0)
+fill(p1, p2, title = "Background", color=color.rgb(33, 150, 243, 95))
+
+
+//Bollinger Bands Signals
+bbcontimportance = input.int(defval=0, minval=0, maxval=100, title="BollingerBands Contact Importance")
+bbcontup = close < lower ? bbcontimportance : 0
+bbcontupstatus = bbcontup != 0 ? "Price Contacted Lower BB" : na
+bbcontdown = open > upper ? bbcontimportance : 0
+bbcontdownstatus = bbcontdown != 0 ? "Price Contacted Upper BB" : na
