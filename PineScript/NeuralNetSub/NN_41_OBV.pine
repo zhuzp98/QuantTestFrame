@@ -1,0 +1,89 @@
+// This work is licensed under a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) https://creativecommons.org/licenses/by-nc-sa/4.0/
+// © rhapsodyz
+
+//@version=5
+indicator(title     = "[Z] Neural Network Sub 41 - Volume - OBV", 
+     shorttitle     = "N_OBV", 
+     overlay        = false, 
+     format         = format.inherit,
+     precision      = 2)
+
+//OBV Divergence////////////////////////////////////////////////////////////////
+len18 = 20
+src18 = close
+lbR18 = 2
+lbL18 = 6
+rangeUpper18 = 60
+rangeLower18 = 5
+plotBull18 = true
+plotHiddenBull18 = false
+plotBear18 = true
+plotHiddenBear18 = false
+
+
+bearColor18 = color.red
+bullColor18 = color.green
+hiddenBullColor18 = color.green
+hiddenBearColor18 = color.new(color.red, 80)
+textColor18 = color.white
+noneColor18 = color.new(color.white, 100)
+
+csrc = ta.change(src18)
+obv1(src18) => ta.cum(ta.change(src18) > 0 ? volume : csrc < 0 ? -volume : 0*volume)
+os = obv1(src18)
+obv_osc = (os - ta.ema(os,len18))
+obc_color=obv_osc > 0 ? color.green : color.red
+plot(obv_osc, color=obc_color, style=plot.style_line,title="OBV-Points", linewidth=2)
+plot(obv_osc, color=color.silver, transp=70, title="OBV", style=plot.style_area)
+hline(0)
+
+plFound18 = na(ta.pivotlow(obv_osc, lbL18, lbR18)) ? false : true
+phFound18 = na(ta.pivothigh(obv_osc, lbL18, lbR18)) ? false : true
+
+_inRange(cond) =>
+    bars = ta.barssince(cond == true)
+    rangeLower18 <= bars and bars <= rangeUpper18
+
+// Regular Bullish
+
+// Osc: Higher Low
+oscHL18 = obv_osc[lbR18] > ta.valuewhen(plFound18, obv_osc[lbR18], 1) and _inRange(plFound18[1])
+
+// Price: Lower Low
+priceLL18 = low[lbR18] < ta.valuewhen(plFound18, low[lbR18], 1)
+bullCond18 = plotBull18 and priceLL18 and oscHL18 and plFound18
+plot(plFound18 ? obv_osc[lbR18] : na,offset=-lbR18,title="Regular Bullish",linewidth=2,color=(bullCond18 ? bullColor18 : noneColor18))
+plotshape(bullCond18 ? obv_osc[lbR18] : na,offset=-lbR18,title="Regular Bullish Label",text=" Bull ",style=shape.labelup,location=location.absolute,color=bullColor18,textcolor=textColor18)
+
+// Hidden Bullish
+
+// Osc: Lower Low
+oscLL18 = obv_osc[lbR18] < ta.valuewhen(plFound18, obv_osc[lbR18], 1) and _inRange(plFound18[1])
+
+// Price: Higher Low
+priceHL18 = low[lbR18] > ta.valuewhen(plFound18, low[lbR18], 1)
+hiddenBullCond18 = plotHiddenBull18 and priceHL18 and oscLL18 and plFound18
+//plot(plFound18 ? obv_osc[lbR18] : na,offset=-lbR18,title="Hidden Bullish",linewidth=2,color=(hiddenBullCond18 ? hiddenBullColor18 : noneColor18))
+//plotshape(hiddenBullCond18 ? obv_osc[lbR18] : na,offset=-lbR18,title="Hidden Bullish Label",text=" H Bull ",style=shape.labelup,location=location.absolute,color=bullColor18,textcolor=textColor18)
+
+// Regular Bearish
+
+// Osc: Lower High
+oscLH18 = obv_osc[lbR18] < ta.valuewhen(phFound18, obv_osc[lbR18], 1) and _inRange(phFound18[1])
+
+// Price: Higher High
+priceHH18 = high[lbR18] > ta.valuewhen(phFound18, high[lbR18], 1)
+bearCond18 = plotBear18 and priceHH18 and oscLH18 and phFound18
+plot(phFound18 ? obv_osc[lbR18] : na,offset=-lbR18,title="Regular Bearish",linewidth=2,color=(bearCond18 ? bearColor18 : noneColor18))
+plotshape(bearCond18 ? obv_osc[lbR18] : na,offset=-lbR18,title="Regular Bearish Label",text=" Bear ",style=shape.labeldown,location=location.absolute,color=bearColor18,textcolor=textColor18)
+
+// Hidden Bearish
+
+// Osc: Higher High
+oscHH18 = obv_osc[lbR18] > ta.valuewhen(phFound18, obv_osc[lbR18], 1) and _inRange(phFound18[1])
+
+// Price: Lower High
+priceLH18 = high[lbR18] < ta.valuewhen(phFound18, high[lbR18], 1)
+hiddenBearCond18 = plotHiddenBear18 and priceLH18 and oscHH18 and phFound18
+//plot(phFound18 ? obv_osc[lbR18] : na,offset=-lbR18,title="Hidden Bearish",linewidth=2,color=(hiddenBearCond18 ? hiddenBearColor18 : noneColor18))
+//plotshape(hiddenBearCond18 ? obv_osc[lbR18] : na,offset=-lbR18,title="Hidden Bearish Label",text=" H Bear ",style=shape.labeldown,location=location.absolute,color=bearColor18,textcolor=textColor18)

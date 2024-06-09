@@ -7,7 +7,7 @@ indicator(title     = "[Z] Neural Network Sub 12 - Trend - SuperTrend",
      overlay        = true, 
      format         = format.inherit,
      precision      = 2)
-     
+
 //Supertrend
 atrPeriod = 10
 factor = 3
