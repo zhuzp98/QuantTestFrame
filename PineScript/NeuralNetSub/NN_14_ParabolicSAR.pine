@@ -14,3 +14,17 @@ increment = 0.01
 maximum = 0.2
 psar = ta.sar(start, increment, maximum)
 plot(psar, "ParabolicSAR", style=plot.style_circles, color=#ffffff)
+
+
+//Parabolic SAR Signals
+psardirWeight = input.int(defval=1, minval=0, maxval=100, title="Parabolic SAR Direction Weight")
+psardirup = psar < close ? psardirWeight : 0
+psardirupstatus = psardirup != 0 ? "PSAR Direction Up" : na
+psardirdown = psar > close ? psardirWeight : 0
+psardirdownstatus = psardirdown != 0 ? "PSAR Direction Down" : na
+
+psarrevWeight = input.int(defval=1, minval=0, maxval=100, title="Parabolic SAR Reversal Weight")
+psarrevup = psar < close and psar[1] > close[1] ? psarrevWeight : 0
+psarrevupstatus = psarrevup != 0 ? "PSAR Reversed Up" : na
+psarrevdown = psar > close and psar[1] < close ? psarrevWeight : 0
+psarrevdownstatus = psarrevdown != 0 ? "PSAR Reversed Down" : na

@@ -27,3 +27,16 @@ bullishsupertrend = supertrend < close and supertrend[1] > close
 bearishsupertrend = supertrend > close and supertrend[1] < close
 plotshape(uptrend, style=shape.labelup, color=color.green, location=location.belowbar, size=size.large)
 plotshape(downtrend, style=shape.labeldown, color=color.red, location=location.abovebar, size=size.large)
+
+//Super Trend Signals
+supertrenddirWeight = input.int(defval=1, minval=0, maxval=100, title="SuperTrend Direction Weight")
+supertrendup = direction < 0 ? supertrenddirWeight : 0
+supertrendupstatus = supertrendup != 0 ? "SuperTrend Direction Up" : na
+supertrenddown = direction > 0 ? supertrenddirWeight : 0
+supertrenddownstatus = supertrenddown != 0 ? "SuperTrend Direction Down" : na
+
+supertrendrevWeight = input.int(defval=1, minval=0, maxval=100, title="SuperTrend Reversal Weight")
+supertrendrevup = direction < 0 and direction[1] > 0[1] ? supertrendrevWeight : 0
+supertrendrevupstatus = supertrendrevup != 0 ? "SuperTrend Reversed Up" : na
+supertrendrevdown = direction > 0 and direction[1] < 0[1] ? supertrendrevWeight : 0
+supertrendrevdownstatus = supertrendrevdown != 0 ? "SuperTrend Reversed Down" : na

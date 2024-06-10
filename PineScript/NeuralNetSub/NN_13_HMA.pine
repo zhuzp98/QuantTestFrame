@@ -14,3 +14,16 @@ src6 = close
 hma = ta.wma(2*ta.wma(src6, len6/2)-ta.wma(src6, len6), math.floor(math.sqrt(len6)))
 hmacolor = close > hma ? #00bcd4 : #e91e63
 plot(hma, title="HMA Line", color=color.new(hmacolor, 25), linewidth=5)
+
+//HMA Signals
+hmacloseposWeight = input.int(defval=1, minval=0, maxval=100, title="HMA Trend Direction Weight")
+hmacloseposup = hma < close ? hmacloseposWeight : 0
+hmacloseposupstatus = hmacloseposup != 0 ? "Price Crossed Over HMA" : na
+hmacloseposdown = hma > close ? hmacloseposWeight : 0
+hmacloseposdownstatus = hmacloseposdown != 0 ? "Price Crossed Under HMA" : na
+
+hmapivotWeight = input.int(defval=2, minval=0, maxval=100, title="HMA Pivot Weight")
+hmapivotup = hma > hma[1] and hma[1] < hma[2] ? hmapivotWeight : 0
+hmapivotupstatus = hmapivotup != 0 ? "HMA Pivot Up" : na
+hmapivotdown = hma < hma[1] and hma[1] > hma[2] ? hmapivotWeight : 0
+hmapivotdownstatus = hmapivotdown != 0 ? "HMA Pivot Down" : na

@@ -51,3 +51,16 @@ out5 = ta.ema(src5, len5)
 ema5color = (out5 > out5[1] ? #00bcd4 : #e91e63)
 ema5 = plot(out5, title="EMA 200", linewidth=3, color=color.new(ema5color, 50), offset=0, display=display.none)
 fill(price, ema5, title="EMA 200 Fill", color=color.new(ema5color, 90), editable=true)
+
+//EMA Signals
+emadirectionWeight = input.int(defval=2, minval=0, maxval=100, title="EMA Trend Direction Weight")
+emadirectionup = out5 < close ? emadirectionWeight : 0
+emadirectionupstatus = emadirectionup != 0 ? "EMA Trend Direction Up" : na
+emadirectiondown = out5 > close ? emadirectionWeight : 0
+emadirectiondownstatus = emadirectiondown != 0 ? "EMA Trend Direction Down" : na
+
+emapushpullWeight = input.int(defval=0, minval=0, maxval=100, title="EMA Pressure Weight")
+emapushup = out2 > out2[1] and out3 < out3[1] ? emapushpullWeight : 0
+emapushupstatus = emapushup != 0 ? "EMA Pushing Up" : na
+emapulldown = out2 < out2[1] and out3 > out3[1] ? emapushpullWeight : 0
+emapulldownstatus = emapulldown != 0 ? "EMA Pulling Down" : na
