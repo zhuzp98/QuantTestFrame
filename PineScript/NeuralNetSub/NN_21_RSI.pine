@@ -82,3 +82,23 @@ priceLH11 = high[lbR11] < ta.valuewhen(phFound11, high[lbR11], 1)
 hiddenBearCond11 = plotHiddenBear11 and priceLH11 and oscHH11 and phFound11
 //plot(phFound11 ? osc11[lbR11] : na, offset=-lbR11, title="Hidden Bearish", linewidth=2, color=(hiddenBearCond11 ? hiddenBearColor11 : noneColor11))
 //plotshape(hiddenBearCond11 ? osc11[lbR11] : na, offset=-lbR11, title="Hidden Bearish Label", text=" H Bear ", style=shape.labeldown, location=location.absolute, color=bearColor11, textcolor=textColor11)
+
+
+//RSI Signals
+rsidivWeight = input.int(defval=2, minval=0, maxval=100, title="RSI Divergence Weight")
+rsidivup = bullCond11 or bullCond11[1] or bullCond11[2] ? rsidivWeight : 0
+rsidivupstatus = rsidivup ? "Bullish RSI Divergence" : na
+rsidivdown = bearCond11 or bearCond11[1] or bearCond11[2] ? rsidivWeight : 0
+rsidivdownstatus = rsidivdown ? "Bearish RSI Divergence" : na
+
+rsilevelWeight = input.int(defval=2, minval=0, maxval=100, title="RSI Level Weight")
+rsioversold = osc11 < 30 ? rsilevelWeight : 0
+rsioversoldstatus = rsioversold != 0 ? "RSI Oversold" : na
+rsioverbought = osc11 > 70 ? rsilevelWeight : 0
+rsioverboughtstatus = rsioverbought != 0 ? "RSI Overbought" : na
+
+rsidirectionWeight = input.int(defval=1, minval=0, maxval=100, title="RSI Cross 50-Line Weight")
+rsicrossup = (osc11 > 50 and osc11[1] < 50) or (osc11 > 50 and osc11[2] < 50) ? rsidirectionWeight : 0
+rsicrossupstatus = rsicrossup != 0 ? "RSI Crossed 50-Line Up" : na
+rsicrossdown = (osc11 < 50 and osc11[1] > 50) or (osc11 < 50 and osc11[2] > 50) ? rsidirectionWeight : 0
+rsicrossdownstatus = rsicrossdown != 0 ? "RSI Crossed 50-Line Down" : na
