@@ -106,3 +106,22 @@ hiddenBearCond12 = plotHiddenBear12 and priceLH12 and oscHH12 and phFound12
 //plot(phFound12 ? osc12[lbR12] : na, offset=-lbR12, title="Hidden Bearish", linewidth=2, color=(hiddenBearCond12 ? hiddenBearColor12 : noneColor12))
 //plotshape(hiddenBearCond12 ? osc12[lbR12] : na, offset=-lbR12, title="Hidden Bearish Label", text=" H Bear ", style=shape.labeldown, location=location.absolute, color=bearColor12, textcolor=textColor12)
 	 
+
+//MACD Signals
+macddivWeight = input.int(defval=1, minval=0, maxval=100, title="MACD Divergence Weight")
+macddivup = bullCond12 or bullCond12[1] or bullCond12[2] ? macddivWeight : 0
+macddivupstatus = macddivup != 0 ? "Bullish MACD Divergence" : na
+macddivdown = bearCond12 or bearCond12[1] or bearCond12[2] ? macddivWeight : 0
+macddivdownstatus = macddivdown != 0 ? "Bearish MACD Divergence" : na
+
+histpivotWeight = input.int(defval=1, minval=0, maxval=100, title="MACD Histogram Pivot Weight")
+histpivotup = hist > hist[1] and hist[1] < hist[2] and hist < 0 ? histpivotWeight : 0
+histpivotupstatus = histpivotup != 0 ? "MACD Histogram Pivot Up" : na
+histpivotdown = hist < hist[1] and hist[1] > hist[2] and hist > 0 ? histpivotWeight : 0
+histpivotdownstatus = histpivotdown != 0 ? "MACD Histogram Pivot Down" : na
+
+macdcrosssignalWeight = input.int(defval=1, minval=0, maxval=100, title="MACD Cross Signal Weight")
+macdcrosssignalup = macd > signal and macd[1] < signal[1] and signal < 0 ? macdcrosssignalWeight : 0
+macdcrosssignalupstatus = macdcrosssignalup != 0 ? "MACD Crossed Signal Up" : na
+macdcrosssignaldown = macd < signal and macd[1] > signal[1] and signal > 0 ? macdcrosssignalWeight : 0
+macdcrosssignaldownstatus = macdcrosssignaldown != 0 ? "MACD Crossed Signal Down" : na

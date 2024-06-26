@@ -93,3 +93,16 @@ priceLH14 = high[lbR14] < ta.valuewhen(phFound14, high[lbR14], 1)
 hiddenBearCond14 = plotHiddenBear14 and priceLH14 and oscHH14 and phFound14
 //plot(phFound14 ? osc14[lbR14] : na, offset=-lbR14, title="Hidden Bearish", linewidth=2, color=(hiddenBearCond14 ? hiddenBearColor14 : noneColor14))
 //plotshape(hiddenBearCond14 ? osc14[lbR14] : na, offset=-lbR14, title="Hidden Bearish Label", text=" H Bear ", style=shape.labeldown, location=location.absolute, color=bearColor14, textcolor=textColor14)
+
+//Stochastic Signals
+sdivWeight = input.int(defval=3, minval=0, maxval=100, title="Stochastic Divergence Weight")
+sdivup = bullCond14 or bullCond14[1] or bullCond14[2] ? sdivWeight : 0
+sdivupstatus = sdivup != 0 ? "Bullish Stoch Divergence" : na
+sdivdown = bearCond14 or bearCond14[1] or bearCond14[2] ? sdivWeight : 0
+sdivdownstatus = sdivdown != 0 ? "Bearish Stoch Divergence" : na
+
+scrosssignalWeight = input.int(defval=1, minval=0, maxval=100, title="Stoch Cross Signal Weight")
+scrosssignalup = k14 > d14 and k14[1] < d14[1] ? scrosssignalWeight : 0
+scrosssignalupstatus = scrosssignalup != 0 ? "Stoch Crossed Signal Up" : na
+scrosssignaldown = k14 < d14 and k14[1] > d14[1] ? scrosssignalWeight : 0
+scrosssignaldownstatus = scrosssignaldown != 0 ? "Stoch Crossed Signal Down" : na

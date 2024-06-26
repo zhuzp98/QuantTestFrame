@@ -36,3 +36,10 @@ plotshape(buySignal and showLabels ? longStop : na, title="Gold Buy", text="Buy"
 
 sellSignal = dir == -1 and dir[1] == 1
 plotshape(sellSignal and showLabels ? shortStop : na, title="Gold Sell", text="Sell", location=location.abovebar, style=shape.labeldown, size=size.tiny, color=shortColor, textcolor=color.new(color.white, 0))
+
+//Average True Range Signals
+atrrevWeight = input.int(defval=0, minval=0, maxval=100, title="ATR Reversal Weight")
+atrrevup = buySignal ? atrrevWeight : 0
+atrrevupstatus = atrrevup != 0 ? "ATR Reversed Up" : na
+atrrevdown = sellSignal ? atrrevWeight : 0
+atrrevdownstatus = atrrevdown != 0 ? "ATR Reversed Down" : na
