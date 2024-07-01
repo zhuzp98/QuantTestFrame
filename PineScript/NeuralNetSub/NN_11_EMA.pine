@@ -47,7 +47,7 @@ ema4 = plot(out4, title="EMA 100", linewidth=3, color=color.new(ema4color, 50), 
 fill(price, ema4, title="EMA 100 Fill", color=color.new(ema4color, 90), editable=true)
 len5 = 200
 src5 = close
-out5 = ta.ema(src5, len5)
+out5 = ta.ema(src5, )
 ema5color = (out5 > out5[1] ? #00bcd4 : #e91e63)
 ema5 = plot(out5, title="EMA 200", linewidth=3, color=color.new(ema5color, 50), offset=0, display=display.none)
 fill(price, ema5, title="EMA 200 Fill", color=color.new(ema5color, 90), editable=true)
