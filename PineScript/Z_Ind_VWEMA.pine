@@ -1,0 +1,28 @@
+// This work is licensed under a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) https://creativecommons.org/licenses/by-nc-sa/4.0/
+// © rhapsodyz
+
+//@version=5
+indicator(title = "[Z] Volume Weighted Moving Average", 
+     shorttitle = "VWMA", 
+     overlay = true, 
+     timeframe = "", 
+     timeframe_gaps = true)
+
+len         = input.int(24, title = "Length", minval=1)
+src         = input(hlc3, title = "Source")
+multiplier  = input.int(2, title = "Band Multiplier", minval=1)
+
+vwsd(src, len)=>
+    vw_mean = ta.vwma(src, len)
+    vw_mean_square = math.sum(math.pow(src - vw_mean, 2) * volume, len)
+    vwsd = math.sqrt((vw_mean_square) / math.sum(volume, len))
+
+ma = ta.vwma(src, len)
+maStd = vwsd(src, len)
+bandUpper = ma + maStd * multiplier
+bandLower = ma - maStd * multiplier
+
+offset = input.int(0, "Offset", minval = -500, maxval = 500)
+plot(ma, title="VWMA", color=#2962FF, offset = offset)
+LowerBand = plot(bandLower, title = "Lower Band", color = color.green)
+UpperBand = plot(bandUpper, title = "Upper Band", color = color.green)
