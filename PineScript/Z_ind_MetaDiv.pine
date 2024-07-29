@@ -136,7 +136,7 @@ if not na(pl)
 // cond == 1 => positive_regular, cond == 2=> negative_hidden
 positive_regular_positive_hidden_divergence(src, cond)=>
     divlen = 0
-    prsc = source == "Close" ? close : low
+    prsc = source == "VWMA" ? vwmaP : (source == "Close" ? close : low)
     // if indicators higher than last value and close price is higher than las close 
     if dontconfirm or src > src[1] or close > close[1]
         startpoint = dontconfirm ? 0 : 1 // don't check last candle
@@ -170,7 +170,7 @@ positive_regular_positive_hidden_divergence(src, cond)=>
 // cond == 1 => negative_regular, cond == 2=> positive_hidden
 negative_regular_negative_hidden_divergence(src, cond)=>
     divlen = 0
-    prsc = source == "Close" ? close : high
+    prsc = source == "VWMA" ? vwmaP : (source == "Close" ? close : high)
     // if indicators higher than last value and close price is higher than las close 
     if dontconfirm or src < src[1] or close < close[1]
         startpoint = dontconfirm ? 0 : 1 // don't check last candle
