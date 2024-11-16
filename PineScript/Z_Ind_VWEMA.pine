@@ -2,27 +2,67 @@
 // © rhapsodyz
 
 //@version=5
-indicator(title = "[Z] Volume Weighted Moving Average", 
-     shorttitle = "VWMA", 
+indicator(title = "[Z] Volume Weighted Exponential Moving Average", 
+     shorttitle = "VWEMA", 
      overlay = true, 
      timeframe = "", 
      timeframe_gaps = true)
 
-len         = input.int(24, title = "Length", minval=1)
+// ##################
+// === Parameters ===
+// ##################
+
+fixed_len   = input.int(24, title = "Fixed Length", minval = 1, maxval = 60)
+dynamic_len = input.bool(true, title = "Use Dynamic Length")
 src         = input(hlc3, title = "Source")
-multiplier  = input.int(2, title = "Band Multiplier", minval=1)
+offset      = input.int(0, title = "Offset", minval = -500, maxval = 500)
+multiplier  = input.float(2, title = "Band Multiplier", minval = 1, maxval = 4, step = 0.1)
+showBands   = input.bool(false, title = "Show Bands")
+
+var len = fixed_len
+
+if dynamic_len
+    secondsInTf = timeframe.in_seconds(timeframe.period)
+    len := if secondsInTf >= timeframe.in_seconds("1M")
+        int(timeframe.in_seconds("1Y") / secondsInTf)
+    else if secondsInTf >= timeframe.in_seconds("1W")
+        int(timeframe.in_seconds("3M") / secondsInTf)
+    else if secondsInTf >= timeframe.in_seconds("1D")/2
+        int(timeframe.in_seconds("1W") / secondsInTf)
+    else if secondsInTf >= 3600
+        int(timeframe.in_seconds("1D") / secondsInTf)
+    else if secondsInTf >= 900
+        int(14400 / secondsInTf)
+    else if secondsInTf >= 120
+        int(3600/secondsInTf)
+    else
+        int(900/secondsInTf)
+else
+    len := fixed_len
+
+plot(len, title = "length", color = color.red, display = display.status_line)
+
+// ##################
+// === Indicators ===
+// ##################
+
+vwema(src, len)=>
+    ta.ema(src * volume, len) / ta.ema(volume, len)
 
 vwsd(src, len)=>
-    vw_mean = ta.vwma(src, len)
+    vw_mean = vwema(src, len)
     vw_mean_square = math.sum(math.pow(src - vw_mean, 2) * volume, len)
     vwsd = math.sqrt((vw_mean_square) / math.sum(volume, len))
 
-ma = ta.vwma(src, len)
+ma = vwema(src, len)
 maStd = vwsd(src, len)
 bandUpper = ma + maStd * multiplier
 bandLower = ma - maStd * multiplier
 
-offset = input.int(0, "Offset", minval = -500, maxval = 500)
-plot(ma, title="VWMA", color=#2962FF, offset = offset)
-LowerBand = plot(bandLower, title = "Lower Band", color = color.green)
-UpperBand = plot(bandUpper, title = "Upper Band", color = color.green)
+// #############
+// === Plots ===
+// #############
+
+plot(ma, title="VWEMA", color=color.rgb(110, 138, 216), linewidth = 2, offset = offset)
+LowerBand = plot(showBands ? bandLower : na, title = "Lower Band", color = color.green)
+UpperBand = plot(showBands ? bandUpper : na, title = "Upper Band", color = color.green)
