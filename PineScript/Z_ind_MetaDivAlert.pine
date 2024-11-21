@@ -14,9 +14,10 @@ indicator(title         = "[Z] Meta Divergence Alert",
 // ##################
 
 prd                 = input.int(5, title = "Pivot Period", minval = 1, maxval = 50)
-source              = input.string("Close", title = "Source for Pivot Points", options = ["Close", "High/Low", "VWMA"])
+source              = input.string("VWMA", title = "Source for Pivot Points", options = ["Close", "High/Low", "VWMA"])
+src                 = input(hlc3, title = "Source for VWMA")
 searchdiv           = input.string("Regular", title = "Divergence Type", options = ["Regular", "Hidden", "Regular/Hidden"])
-showlimit           = input.int(1, title="Minimum Number of Divergence", minval = 2, maxval = 11)
+showlimit           = input.int(5, title="Minimum Number of Divergence", minval = 1, maxval = 11)
 maxpp               = input.int(10, title = "Maximum Pivot Points to Check", minval = 1, maxval = 20)
 maxbars             = input.int(100, title = "Maximum Bars to Check", minval = 30, maxval = 200)
 dontconfirm         = input.bool(false, title = "Don't Wait for Confirmation")
@@ -48,7 +49,29 @@ Mfi     = ta.mfi(close, 14) // Moneyt Flow Index
 [macd, signal, deltamacd] = ta.macd(close, 12, 26, 9) // MACD
 
 // Check if we get new Pivot High Or Pivot Low
-vwmaP = ta.vwma(hlc3, 20)
+
+secondsInTf = timeframe.in_seconds(timeframe.period)
+vwemalen = if secondsInTf >= timeframe.in_seconds("1M")
+    int(timeframe.in_seconds("1Y") / secondsInTf)
+else if secondsInTf >= timeframe.in_seconds("1W")
+    int(timeframe.in_seconds("3M") / secondsInTf)
+else if secondsInTf >= timeframe.in_seconds("1D")/2
+    int(timeframe.in_seconds("1W") / secondsInTf)
+else if secondsInTf >= 3600
+    int(timeframe.in_seconds("1D") / secondsInTf)
+else if secondsInTf >= 900
+    int(14400 / secondsInTf)
+else if secondsInTf >= 120
+    int(3600/secondsInTf)
+else
+    int(900/secondsInTf)
+
+vwema(src, len)=>
+    ta.ema(src * volume, len) / ta.ema(volume, len)
+
+vwmaP = vwema(src, vwemalen)
+
+// vwmaP = ta.vwma(hlc3, 20)
 float ph = ta.pivothigh((source == "VWMA" ? vwmaP : (source == "Close" ? close : high)), prd, prd)
 float pl = ta.pivotlow((source == "VWMA" ? vwmaP : (source == "Close" ? close : low)), prd, prd)
 
@@ -221,10 +244,10 @@ alertcondition(neg_reg_div_detected or neg_hid_div_detected, title='Negative Div
 
 seriesNeg = searchdiv == "Regular" ? neg_reg_div_detected : (searchdiv == "Hidden" ? neg_hid_div_detected : (neg_reg_div_detected or neg_hid_div_detected))
 seriesPos = searchdiv == "Regular" ? pos_reg_div_detected : (searchdiv == "Hidden" ? pos_hid_div_detected : (pos_reg_div_detected or pos_hid_div_detected))
-NegDiv = plotshape(seriesNeg,  title = "Down",  location=location.abovebar, color=color.rgb(241, 222, 15),  style=shape.circle,display = display.pane)
-PosDiv = plotshape(seriesPos,  title = "Up",  location=location.belowbar, color=color.rgb(145, 222, 106), style=shape.circle, display = display.pane)
+plotshape(seriesNeg,  title = "Down",  location=location.abovebar, color=color.rgb(241, 222, 15),  style=shape.labeldown, size = size.small, display = display.pane)
+plotshape(seriesPos,  title = "Up",  location=location.belowbar, color=color.rgb(145, 222, 106), style=shape.labelup, size = size.small, display = display.pane)
 
-PosReg = plotshape(pos_reg_div_detected,  title = "Positive Regular",  location=location.belowbar, color=color.yellow,  style=shape.labelup, display = display.pane)
-PosHid = plotshape(pos_hid_div_detected,  title = "Positive Hidden",  location=location.belowbar, color=color.lime,  style=shape.labelup, display = display.pane)
-NegReg = plotshape(neg_reg_div_detected,  title = "Negative Regular",  location=location.abovebar, color=color.navy,  style=shape.labeldown, display = display.pane)
-NegHid = plotshape(neg_hid_div_detected,  title = "Negative Hidden",  location=location.abovebar, color=color.red,  style=shape.labeldown, display = display.pane)
+//plotshape(pos_reg_div_detected,  title = "Positive Regular",  location=location.belowbar, color=color.yellow,  style=shape.labelup, display = display.pane)
+//plotshape(pos_hid_div_detected,  title = "Positive Hidden",  location=location.belowbar, color=color.lime,  style=shape.labelup, display = display.pane)
+//plotshape(neg_reg_div_detected,  title = "Negative Regular",  location=location.abovebar, color=color.navy,  style=shape.labeldown, display = display.pane)
+//plotshape(neg_hid_div_detected,  title = "Negative Hidden",  location=location.abovebar, color=color.red,  style=shape.labeldown, display = display.pane)
