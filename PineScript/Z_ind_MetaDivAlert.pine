@@ -17,7 +17,7 @@ prd                 = input.int(5, title = "Pivot Period", minval = 1, maxval = 
 source              = input.string("VWMA", title = "Source for Pivot Points", options = ["Close", "High/Low", "VWMA"])
 src                 = input(hlc3, title = "Source for VWMA")
 searchdiv           = input.string("Regular", title = "Divergence Type", options = ["Regular", "Hidden", "Regular/Hidden"])
-showlimit           = input.int(5, title="Minimum Number of Divergence", minval = 1, maxval = 11)
+showlimit           = input.int(5, title="Minimum Number of Divergence", minval = 1, maxval = 12)
 maxpp               = input.int(10, title = "Maximum Pivot Points to Check", minval = 1, maxval = 20)
 maxbars             = input.int(100, title = "Maximum Bars to Check", minval = 30, maxval = 200)
 dontconfirm         = input.bool(false, title = "Don't Wait for Confirmation")
@@ -31,12 +31,13 @@ calcobv             = input.bool(true, title = "OBV")
 calcvwmacd          = input.bool(true, title = "VWmacd")
 calccmf             = input.bool(true, title = "Chaikin Money Flow")
 calcmfi             = input.bool(true, title = "Money Flow Index")
+calcsmi             = input.bool(true, title = "Stochastic Momentum Index")
 calcext             = input.bool(false, title = "Check External Indicator")
 externalindi        = input(close, title = "External Indicator")
 
-// ##################
-// === Indicators ===
-// ##################
+// ########################
+// === Basic Indicators ===
+// ########################
 
 rsi     = ta.rsi(close, 14) // RSI
 moment  = ta.mom(close, 10) // Momentum
@@ -46,7 +47,17 @@ stk     = ta.sma(ta.stoch(close, high, low, 14), 3) // Stoch
 maFast  = ta.vwma(close, 12), maSlow = ta.vwma(close, 26), vwmacd = maFast - maSlow // volume weighted macd
 Cmfm    = ((close-low) - (high-close)) / (high - low), Cmfv = Cmfm * volume, cmf = ta.sma(Cmfv, 21) / ta.sma(volume,21) // Chaikin money flow
 Mfi     = ta.mfi(close, 14) // Moneyt Flow Index
-[macd, signal, deltamacd] = ta.macd(close, 12, 26, 9) // MACD
+[macd, signal, macdhist] = ta.macd(close, 12, 26, 9) // MACD
+
+// SMI
+emaEma(source, length) => ta.ema(ta.ema(source, length), length)
+highestHigh         = ta.highest(10)
+lowestLow           = ta.lowest(10)
+smi                 = 200 * (emaEma(close - (highestHigh + lowestLow) / 2, 10) / emaEma(highestHigh - lowestLow, 10))
+
+// ##############
+// === Pivots ===
+// ##############
 
 // Check if we get new Pivot High Or Pivot Low
 
@@ -66,6 +77,7 @@ else if secondsInTf >= 120
 else
     int(900/secondsInTf)
 
+// Volume Weighted Exponential Moving Average
 vwema(src, len)=>
     ta.ema(src * volume, len) / ta.ema(volume, len)
 
@@ -97,6 +109,10 @@ if not na(pl)
     if array.size(pl_positions) > maxarraysize
         array.pop(pl_positions)
         array.pop(pl_vals)
+
+// ##################
+// === Divergence ===
+// ##################
 
 // functions to check Regular Divergences and Hidden Divergences
 
@@ -178,7 +194,7 @@ calculate_divs(cond, indicator)=>
     divs
 
 // array to keep all divergences
-var all_divergences = array.new_int(44) // 11 indicators * 4 divergence = 44 elements
+var all_divergences = array.new_int(48) // 12 indicators * 4 divergence = 48 elements
 // set related array elements
 array_set_divs(div_pointer, index)=>
     for x = 0 to 3
@@ -186,7 +202,7 @@ array_set_divs(div_pointer, index)=>
 
 // set divergences array 
 array_set_divs(calculate_divs(calcmacd, macd), 0)
-array_set_divs(calculate_divs(calcmacda, deltamacd), 1)
+array_set_divs(calculate_divs(calcmacda, macdhist), 1)
 array_set_divs(calculate_divs(calcrsi, rsi), 2)
 array_set_divs(calculate_divs(calcstoc, stk), 3)
 array_set_divs(calculate_divs(calccci, cci), 4)
@@ -195,7 +211,8 @@ array_set_divs(calculate_divs(calcobv, Obv), 6)
 array_set_divs(calculate_divs(calcvwmacd, vwmacd), 7)
 array_set_divs(calculate_divs(calccmf, cmf), 8)
 array_set_divs(calculate_divs(calcmfi, Mfi), 9)
-array_set_divs(calculate_divs(calcext, externalindi), 10)
+array_set_divs(calculate_divs(calcsmi, smi), 10)
+array_set_divs(calculate_divs(calcext, externalindi), 11)
 
 // check minimum number of divergence, if less than showlimit then delete all divergence
 total_div = 0
@@ -216,7 +233,7 @@ neg_reg_div_detected = false
 pos_hid_div_detected = false
 neg_hid_div_detected = false
 
-for x = 0 to 10
+for x = 0 to 11
     div_type = -1
     for y = 0 to 3
         if array.get(all_divergences, x * 4 + y) > 0 // any divergence?   
