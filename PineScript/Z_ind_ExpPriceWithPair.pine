@@ -7,7 +7,7 @@ indicator(title     = "[Z] Expected Price with BTC Pair",
      overlay        = true, 
      format         = format.inherit,
      precision      = 2,
-     timeframe      = timeframe.period, 
+     timeframe      = "", 
      timeframe_gaps = true)
 
 // ##################
